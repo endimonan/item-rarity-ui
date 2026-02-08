@@ -431,7 +431,7 @@ function ItemRarityUI.loadRarityData()
         end
         
         ItemRarityUI.dataLoaded = true
-        print("[ItemRarityUI] Item Rarity UI Build 1.0")
+        print("[ItemRarityUI] Item Rarity UI Build 1.01")
         print("[ItemRarityUI] Loaded rarity data for " .. count .. " items")
         return true
     else
@@ -499,6 +499,13 @@ end
 
 ItemRarityUI.rarityColumnWidth = 200  -- Default width (maximum)
 
+-- Calculate effective column width based on available space
+-- Limits rarity column to 50% of the Type column to avoid overlap on small screens
+function ItemRarityUI.getEffectiveColumnWidth(typeColWidth)
+    local maxWidth = math.floor(typeColWidth * 0.5)
+    return math.min(ItemRarityUI.rarityColumnWidth, maxWidth)
+end
+
 --***********************************************************
 --** Hook createChildren to add Rarity column header
 --***********************************************************
@@ -522,7 +529,7 @@ function ISInventoryPane:createChildren()
         self.rarityHeader.backgroundColorMouseOver = {r=0.3, g=0.3, b=0.3, a=1.0}
         self.rarityHeader.textColor = { r = 1, g = 1, b = 1, a = 1 }
         self.rarityHeader.font = self.headerFont or UIFont.Small
-        self.rarityHeader.minimumWidth = 50
+        self.rarityHeader.minimumWidth = 30
         self.rarityHeader.maximumWidth = 200
         self.rarityHeader.resizeLeft = true  -- Resize from left edge
         self.rarityHeader.onresize = { ISInventoryPane.onResizeRarityColumn, self, self.rarityHeader }
@@ -619,11 +626,13 @@ function ISInventoryPane:prerender()
     -- Position rarity header
     if self.rarityHeader and self.column3 then
         local typeColWidth = self.column4 - self.column3
-        local rarityX = self.column3 + typeColWidth - ItemRarityUI.rarityColumnWidth - 5
+        local effectiveWidth = ItemRarityUI.getEffectiveColumnWidth(typeColWidth)
+        local rarityX = self.column3 + typeColWidth - effectiveWidth - 5
         
         self.rarityHeader:setX(rarityX)
         self.rarityHeader:setY(0)
-        self.rarityHeader:setWidth(ItemRarityUI.rarityColumnWidth)
+        self.rarityHeader:setWidth(effectiveWidth)
+        self.rarityHeader.maximumWidth = math.floor(typeColWidth * 0.5)
         self.rarityHeader.title = ItemRarityUI.getText("Rarity")
     end
     
@@ -685,7 +694,8 @@ function ISInventoryPane:renderdetails(doDragged)
         
         -- Calculate rarity column X position (same as header)
         local typeColWidth = self.column4 - self.column3
-        local rarityX = self.column3 + typeColWidth - ItemRarityUI.rarityColumnWidth
+        local effectiveWidth = ItemRarityUI.getEffectiveColumnWidth(typeColWidth)
+        local rarityX = self.column3 + typeColWidth - effectiveWidth
         
         for _, v in ipairs(self.itemslist) do
             if v.items then
