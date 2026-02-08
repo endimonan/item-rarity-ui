@@ -1,24 +1,31 @@
 /**
  * Build script for Item Rarity UI
  * 
- * Copies only the mod files needed for Steam Workshop / testing
- * into builds/item-rarity-ui/
+ * Copies mod files into builds/item-rarity-ui/ and optionally
+ * deploys to the Steam Workshop folder for testing.
  * 
- * Usage: node build.js
+ * Usage: node build.js [--deploy]
+ * 
+ * --deploy   Also copy to Steam Workshop folder
  */
 
 const fs = require('fs');
 const path = require('path');
 
-const ROOT = __dirname;
+const ROOT = path.join(__dirname, '..');
 const BUILD_DIR = path.join(ROOT, 'builds', 'item-rarity-ui');
 
+// Steam Workshop mod install path
+// Workshop folder uses lua/ directly (no media/ prefix)
+const WORKSHOP_DIR = 'C:\\Program Files (x86)\\Steam\\steamapps\\workshop\\content\\108600\\3662387304\\mods\\item-rarity-ui';
+
 // Files to include in the build (relative to project root)
+// format: { src: relative path from ROOT, dest: relative path in build output }
 const MOD_FILES = [
-    'mod.info',
-    'poster.png',
-    'media/lua/client/ItemRarityUI.lua',
-    'media/lua/shared/ItemRarityData.lua',
+    { src: 'mod.info',                          build: 'mod.info',                          workshop: 'mod.info' },
+    { src: 'poster.png',                        build: 'poster.png',                        workshop: 'poster.png' },
+    { src: 'media/lua/client/ItemRarityUI.lua', build: 'media/lua/client/ItemRarityUI.lua', workshop: 'lua/client/ItemRarityUI.lua' },
+    { src: 'media/lua/shared/ItemRarityData.lua', build: 'media/lua/shared/ItemRarityData.lua', workshop: 'lua/shared/ItemRarityData.lua' },
 ];
 
 /**
@@ -41,7 +48,15 @@ function cleanDir(dir) {
     }
 }
 
+function formatSize(size) {
+    if (size > 1024 * 1024) return `${(size / (1024 * 1024)).toFixed(2)} MB`;
+    if (size > 1024) return `${(size / 1024).toFixed(1)} KB`;
+    return `${size} B`;
+}
+
 function main() {
+    const deploy = process.argv.includes('--deploy');
+    
     console.log('Building Item Rarity UI');
     console.log('=======================\n');
 
@@ -49,15 +64,15 @@ function main() {
     cleanDir(BUILD_DIR);
     console.log(`Cleaned: ${path.relative(ROOT, BUILD_DIR)}/`);
 
-    // Copy mod files
+    // Copy mod files to build dir
     let totalSize = 0;
 
     for (const file of MOD_FILES) {
-        const src = path.join(ROOT, file);
-        const dest = path.join(BUILD_DIR, file);
+        const src = path.join(ROOT, file.src);
+        const dest = path.join(BUILD_DIR, file.build);
 
         if (!fs.existsSync(src)) {
-            console.error(`  MISSING: ${file}`);
+            console.error(`  MISSING: ${file.src}`);
             process.exit(1);
         }
 
@@ -65,19 +80,34 @@ function main() {
         const size = fs.statSync(src).size;
         totalSize += size;
 
-        const sizeStr = size > 1024
-            ? `${(size / 1024).toFixed(1)} KB`
-            : `${size} B`;
-
-        console.log(`  ${file} (${sizeStr})`);
+        console.log(`  ${file.src} (${formatSize(size)})`);
     }
 
-    const totalStr = totalSize > 1024 * 1024
-        ? `${(totalSize / (1024 * 1024)).toFixed(2)} MB`
-        : `${(totalSize / 1024).toFixed(1)} KB`;
-
-    console.log(`\nBuild complete: ${MOD_FILES.length} files, ${totalStr}`);
+    console.log(`\nBuild complete: ${MOD_FILES.length} files, ${formatSize(totalSize)}`);
     console.log(`Output: ${path.relative(ROOT, BUILD_DIR)}/`);
+    
+    // Deploy to Workshop if --deploy flag
+    if (deploy) {
+        console.log('\n--- Deploying to Workshop ---\n');
+        
+        if (!fs.existsSync(WORKSHOP_DIR)) {
+            console.error(`Workshop folder not found: ${WORKSHOP_DIR}`);
+            console.error('Is the mod subscribed on Steam Workshop?');
+            process.exit(1);
+        }
+        
+        for (const file of MOD_FILES) {
+            const src = path.join(ROOT, file.src);
+            const dest = path.join(WORKSHOP_DIR, file.workshop);
+            
+            copyFile(src, dest);
+            console.log(`  ${file.workshop}`);
+        }
+        
+        console.log(`\nDeployed to: ${WORKSHOP_DIR}`);
+    } else {
+        console.log('\nTip: use --deploy to also copy to Steam Workshop folder');
+    }
 }
 
 main();
