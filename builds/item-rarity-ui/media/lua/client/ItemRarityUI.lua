@@ -56,7 +56,13 @@ ItemRarityUI.rarityTiers = {
         maxChance = 999999,  -- remaining ~50%
         color = { r = 0.7, g = 0.7, b = 0.7 }  -- White/Gray
     },
-    -- For items not in loot tables (player starting items, zombie drops only, etc.)
+    -- For items only obtainable via crafting (not found in loot tables)
+    crafted = {
+        name = "Crafted",
+        maxChance = -1,
+        color = { r = 0.5, g = 0.85, b = 0.85 }  -- Teal/Cyan
+    },
+    -- For items not in loot tables and not craftable
     unknown = {
         name = "Unknown",
         maxChance = -1,
@@ -73,6 +79,7 @@ ItemRarityUI.translations = {
         Rare = "Rare",
         Uncommon = "Uncommon",
         Common = "Common",
+        Crafted = "Crafted",
         Unknown = "Unknown",
         Rarity = "Rarity"
     },
@@ -83,6 +90,7 @@ ItemRarityUI.translations = {
         Rare = "Raro",
         Uncommon = "Incomum",
         Common = "Comum",
+        Crafted = "Fabricado",
         Unknown = "Desconhecido",
         Rarity = "Raridade"
     },
@@ -92,6 +100,7 @@ ItemRarityUI.translations = {
         Rare = "Raro",
         Uncommon = "Incomum",
         Common = "Comum",
+        Crafted = "Fabricado",
         Unknown = "Desconhecido",
         Rarity = "Raridade"
     },
@@ -102,6 +111,7 @@ ItemRarityUI.translations = {
         Rare = "Raro",
         Uncommon = "Poco común",
         Common = "Común",
+        Crafted = "Fabricado",
         Unknown = "Desconocido",
         Rarity = "Rareza"
     },
@@ -112,6 +122,7 @@ ItemRarityUI.translations = {
         Rare = "Rare",
         Uncommon = "Peu commun",
         Common = "Commun",
+        Crafted = "Fabriqué",
         Unknown = "Inconnu",
         Rarity = "Rareté"
     },
@@ -122,6 +133,7 @@ ItemRarityUI.translations = {
         Rare = "Selten",
         Uncommon = "Ungewöhnlich",
         Common = "Gewöhnlich",
+        Crafted = "Hergestellt",
         Unknown = "Unbekannt",
         Rarity = "Seltenheit"
     },
@@ -132,6 +144,7 @@ ItemRarityUI.translations = {
         Rare = "Raro",
         Uncommon = "Non comune",
         Common = "Comune",
+        Crafted = "Fabbricato",
         Unknown = "Sconosciuto",
         Rarity = "Rarità"
     },
@@ -142,6 +155,7 @@ ItemRarityUI.translations = {
         Rare = "Редкий",
         Uncommon = "Необычный",
         Common = "Обычный",
+        Crafted = "Создано",
         Unknown = "Неизвестно",
         Rarity = "Редкость"
     },
@@ -152,6 +166,7 @@ ItemRarityUI.translations = {
         Rare = "Rzadki",
         Uncommon = "Niepospolity",
         Common = "Pospolity",
+        Crafted = "Wytworzony",
         Unknown = "Nieznany",
         Rarity = "Rzadkość"
     },
@@ -162,6 +177,7 @@ ItemRarityUI.translations = {
         Rare = "レア",
         Uncommon = "アンコモン",
         Common = "コモン",
+        Crafted = "クラフト",
         Unknown = "不明",
         Rarity = "レアリティ"
     },
@@ -172,6 +188,7 @@ ItemRarityUI.translations = {
         Rare = "희귀",
         Uncommon = "고급",
         Common = "일반",
+        Crafted = "제작",
         Unknown = "미확인",
         Rarity = "희귀도"
     },
@@ -182,6 +199,7 @@ ItemRarityUI.translations = {
         Rare = "稀有",
         Uncommon = "精良",
         Common = "普通",
+        Crafted = "制作",
         Unknown = "未知",
         Rarity = "稀有度"
     },
@@ -191,6 +209,7 @@ ItemRarityUI.translations = {
         Rare = "稀有",
         Uncommon = "精良",
         Common = "普通",
+        Crafted = "制作",
         Unknown = "未知",
         Rarity = "稀有度"
     },
@@ -201,6 +220,7 @@ ItemRarityUI.translations = {
         Rare = "稀有",
         Uncommon = "精良",
         Common = "普通",
+        Crafted = "製作",
         Unknown = "未知",
         Rarity = "稀有度"
     },
@@ -211,6 +231,7 @@ ItemRarityUI.translations = {
         Rare = "หายาก",
         Uncommon = "ไม่ธรรมดา",
         Common = "ธรรมดา",
+        Crafted = "ประดิษฐ์",
         Unknown = "ไม่ทราบ",
         Rarity = "ความหายาก"
     },
@@ -221,6 +242,7 @@ ItemRarityUI.translations = {
         Rare = "Nadir",
         Uncommon = "Sıradışı",
         Common = "Yaygın",
+        Crafted = "El Yapımı",
         Unknown = "Bilinmeyen",
         Rarity = "Nadirlik"
     },
@@ -231,6 +253,7 @@ ItemRarityUI.translations = {
         Rare = "Zeldzaam",
         Uncommon = "Ongewoon",
         Common = "Gewoon",
+        Crafted = "Vervaardigd",
         Unknown = "Onbekend",
         Rarity = "Zeldzaamheid"
     },
@@ -241,6 +264,7 @@ ItemRarityUI.translations = {
         Rare = "Vzácný",
         Uncommon = "Neobvyklý",
         Common = "Běžný",
+        Crafted = "Vyrobený",
         Unknown = "Neznámý",
         Rarity = "Vzácnost"
     },
@@ -251,6 +275,7 @@ ItemRarityUI.translations = {
         Rare = "Ritka",
         Uncommon = "Szokatlan",
         Common = "Közönséges",
+        Crafted = "Készített",
         Unknown = "Ismeretlen",
         Rarity = "Ritkaság"
     },
@@ -261,6 +286,7 @@ ItemRarityUI.translations = {
         Rare = "نادر",
         Uncommon = "غير شائع",
         Common = "شائع",
+        Crafted = "مصنوع",
         Unknown = "مجهول",
         Rarity = "الندرة"
     },
@@ -271,6 +297,7 @@ ItemRarityUI.translations = {
         Rare = "Sjelden",
         Uncommon = "Uvanlig",
         Common = "Vanlig",
+        Crafted = "Laget",
         Unknown = "Ukjent",
         Rarity = "Sjeldenhet"
     },
@@ -281,6 +308,7 @@ ItemRarityUI.translations = {
         Rare = "Sjælden",
         Uncommon = "Usædvanlig",
         Common = "Almindelig",
+        Crafted = "Fremstillet",
         Unknown = "Ukendt",
         Rarity = "Sjældenhed"
     },
@@ -291,6 +319,7 @@ ItemRarityUI.translations = {
         Rare = "Harvinainen",
         Uncommon = "Epätavallinen",
         Common = "Tavallinen",
+        Crafted = "Valmistettu",
         Unknown = "Tuntematon",
         Rarity = "Harvinaisuus"
     },
@@ -301,6 +330,7 @@ ItemRarityUI.translations = {
         Rare = "Sällsynt",
         Uncommon = "Ovanlig",
         Common = "Vanlig",
+        Crafted = "Tillverkad",
         Unknown = "Okänd",
         Rarity = "Sällsynthet"
     },
@@ -311,6 +341,7 @@ ItemRarityUI.translations = {
         Rare = "Рідкісний",
         Uncommon = "Незвичайний",
         Common = "Звичайний",
+        Crafted = "Створено",
         Unknown = "Невідомо",
         Rarity = "Рідкісність"
     }
@@ -400,6 +431,7 @@ function ItemRarityUI.loadRarityData()
         end
         
         ItemRarityUI.dataLoaded = true
+        print("[ItemRarityUI] Item Rarity UI Build 1.0")
         print("[ItemRarityUI] Loaded rarity data for " .. count .. " items")
         return true
     else
@@ -508,6 +540,13 @@ end
 
 -- Sort by rarity functions (ascending and descending)
 -- These respect the equipped/inHotbar sections like the vanilla sort functions
+-- Helper to get sortable chance value (crafted/unknown items sort at the end)
+local function getSortChance(data)
+    if not data then return 99999 end
+    if data.rarity == "crafted" then return 99998 end
+    return data.chance
+end
+
 ISInventoryPane.itemSortByRarityInc = function(a, b)
     -- Keep equipped items in their own section (at the end)
     if a.equipped and not b.equipped then return false end
@@ -524,8 +563,8 @@ ISInventoryPane.itemSortByRarityInc = function(a, b)
     local dataA = ItemRarityUI.getRarityData(itemA:getFullType())
     local dataB = ItemRarityUI.getRarityData(itemB:getFullType())
     
-    local chanceA = dataA and dataA.chance or 99999
-    local chanceB = dataB and dataB.chance or 99999
+    local chanceA = getSortChance(dataA)
+    local chanceB = getSortChance(dataB)
     
     -- Ascending: rarer items first (lower chance = rarer)
     return chanceA < chanceB
@@ -547,8 +586,8 @@ ISInventoryPane.itemSortByRarityDesc = function(a, b)
     local dataA = ItemRarityUI.getRarityData(itemA:getFullType())
     local dataB = ItemRarityUI.getRarityData(itemB:getFullType())
     
-    local chanceA = dataA and dataA.chance or 99999
-    local chanceB = dataB and dataB.chance or 99999
+    local chanceA = getSortChance(dataA)
+    local chanceB = getSortChance(dataB)
     
     -- Descending: common items first (higher chance = more common)
     return chanceA > chanceB

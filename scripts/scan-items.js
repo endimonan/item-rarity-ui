@@ -13,7 +13,15 @@ const path = require('path');
 // Project Zomboid install path
 const PZ_PATH = 'C:\\Program Files (x86)\\Steam\\steamapps\\common\\ProjectZomboid';
 const SCRIPTS_PATH = path.join(PZ_PATH, 'media', 'scripts');
-const OUTPUT_FILE = path.join(__dirname, 'all-items.json');
+const PROJECT_ROOT = path.join(__dirname, '..');
+const OUTPUT_FILE = path.join(PROJECT_ROOT, 'all-items.json');
+
+// Recipe files to parse for craftable items
+const RECIPE_FILES = [
+    path.join(SCRIPTS_PATH, 'recipes.txt'),
+    path.join(SCRIPTS_PATH, 'recipes_radio.txt'),
+    path.join(SCRIPTS_PATH, 'evolvedrecipes.txt'),
+];
 
 /**
  * Recursively find all .txt files in a directory
@@ -81,6 +89,46 @@ function parseScriptFile(filePath) {
 }
 
 /**
+ * Parse recipe files and extract all craftable item results
+ */
+function parseRecipeFiles() {
+    const craftableItems = new Set();
+    
+    for (const filePath of RECIPE_FILES) {
+        if (!fs.existsSync(filePath)) continue;
+        
+        const content = fs.readFileSync(filePath, 'utf8');
+        const fileName = path.basename(filePath);
+        
+        // Match standard recipes: Result:ItemName or Result:ItemName=count
+        const resultRegex = /Result\s*:\s*(\w[\w.]*)/g;
+        let match;
+        while ((match = resultRegex.exec(content)) !== null) {
+            let itemName = match[1];
+            // Add Base. prefix if no module specified
+            if (!itemName.includes('.')) {
+                itemName = 'Base.' + itemName;
+            }
+            craftableItems.add(itemName);
+        }
+        
+        // Match evolved recipes: ResultItem:ItemName
+        const evolvedRegex = /ResultItem\s*:\s*(\w[\w.]*)/g;
+        while ((match = evolvedRegex.exec(content)) !== null) {
+            let itemName = match[1];
+            if (!itemName.includes('.')) {
+                itemName = 'Base.' + itemName;
+            }
+            craftableItems.add(itemName);
+        }
+        
+        console.log(`  ${fileName}: ${craftableItems.size} craftable items (cumulative)`);
+    }
+    
+    return craftableItems;
+}
+
+/**
  * Main function
  */
 function main() {
@@ -117,6 +165,10 @@ function main() {
         categoryStats[cat] = (categoryStats[cat] || 0) + 1;
     }
     
+    // Parse recipe files for craftable items
+    console.log('\nParsing recipe files...');
+    const craftableItems = parseRecipeFiles();
+    
     // Build lookup map (fullName -> item data)
     const itemMap = {};
     for (const item of allItems) {
@@ -124,14 +176,19 @@ function main() {
             displayCategory: item.displayCategory,
             type: item.type,
             displayName: item.displayName,
-            sourceFile: item.sourceFile
+            sourceFile: item.sourceFile,
+            craftable: craftableItems.has(item.fullName)
         };
     }
+    
+    // Count craftable
+    const craftableCount = Object.values(itemMap).filter(i => i.craftable).length;
     
     // Write output
     const output = {
         generatedAt: new Date().toISOString(),
         totalItems: allItems.length,
+        craftableItems: craftableCount,
         categories: categoryStats,
         items: itemMap
     };
@@ -151,6 +208,7 @@ function main() {
         console.log(`  ${cat}: ${count}`);
     }
     
+    console.log(`\nCraftable items: ${craftableCount}`);
     console.log(`\nOutput written to: ${OUTPUT_FILE}`);
 }
 

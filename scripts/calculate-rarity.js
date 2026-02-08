@@ -30,14 +30,16 @@ const path = require('path');
 
 const PZ_PATH = 'C:\\Program Files (x86)\\Steam\\steamapps\\common\\ProjectZomboid';
 
+const PROJECT_ROOT = path.join(__dirname, '..');
+
 const DISTRIBUTION_FILES = [
-    path.join(__dirname, 'test.lua'),  // ProceduralDistributions.lua copy
+    path.join(PROJECT_ROOT, 'test.lua'),  // ProceduralDistributions.lua copy
     path.join(PZ_PATH, 'media', 'lua', 'server', 'Items', 'Distributions.lua'),
     path.join(PZ_PATH, 'media', 'lua', 'server', 'Vehicles', 'VehicleDistributions.lua'),
 ];
 
-const ITEMS_REGISTRY_FILE = path.join(__dirname, 'all-items.json');
-const OUTPUT_FILE = path.join(__dirname, 'media', 'lua', 'shared', 'ItemRarityData.lua');
+const ITEMS_REGISTRY_FILE = path.join(PROJECT_ROOT, 'all-items.json');
+const OUTPUT_FILE = path.join(PROJECT_ROOT, 'media', 'lua', 'shared', 'ItemRarityData.lua');
 
 // Rarity thresholds (based on total real chance)
 const RARITY_THRESHOLDS = {
@@ -297,6 +299,45 @@ function processDerivedItems(itemData) {
 }
 
 // ============================================================
+// Crafted Items
+// ============================================================
+
+/**
+ * Add "crafted" entries for items that:
+ * - Are NOT in any loot table
+ * - ARE the result of a crafting recipe (from all-items.json craftable flag)
+ */
+function processCraftedItems(itemData, itemRegistry) {
+    if (!itemRegistry) return 0;
+    
+    let craftedCount = 0;
+    
+    for (const [itemName, regData] of Object.entries(itemRegistry)) {
+        // Skip if already in loot tables
+        if (itemData[itemName]) continue;
+        
+        // Skip if not craftable
+        if (!regData.craftable) continue;
+        
+        // Skip system categories that players never see
+        const skipCategories = ['ZedDmg', 'Wound', 'Bandage', 'Hidden', 'Corpse', 'MaleBody'];
+        if (skipCategories.includes(regData.displayCategory)) continue;
+        
+        // Add as crafted item
+        itemData[itemName] = {
+            totalRealChance: -1,  // sentinel value for crafted
+            occurrences: 0,
+            lists: [],
+            isCrafted: true
+        };
+        
+        craftedCount++;
+    }
+    
+    return craftedCount;
+}
+
+// ============================================================
 // Output Generation
 // ============================================================
 
@@ -316,6 +357,7 @@ function generateLuaFile(itemData, itemRegistry) {
     - Confidence threshold: Legendary needs 3+ occurrences, Epic needs 2+
     - Category cap: Junk/Hidden/ZedDmg items capped at lower tiers
     - Derived items: Box contents inherit rarity from their container
+    - Crafted items: Items not in loot tables but craftable via recipes
     
     Thresholds:
     - Legendary: < ${RARITY_THRESHOLDS.legendary} (3+ occurrences required)
@@ -323,28 +365,39 @@ function generateLuaFile(itemData, itemRegistry) {
     - Rare: ${RARITY_THRESHOLDS.epic} - ${RARITY_THRESHOLDS.rare}
     - Uncommon: ${RARITY_THRESHOLDS.rare} - ${RARITY_THRESHOLDS.uncommon}
     - Common: > ${RARITY_THRESHOLDS.uncommon}
+    - Crafted: items only obtainable via crafting (not found in loot tables)
 ]]
 
 ItemRarityData = {
 `;
     
-    // Sort items by rarity (rarest first)
+    // Sort: loot items by rarity (rarest first), crafted at the end
     const sortedItems = Object.entries(itemData)
-        .sort((a, b) => a[1].totalRealChance - b[1].totalRealChance);
+        .sort((a, b) => {
+            // Crafted items go to the end
+            if (a[1].isCrafted && !b[1].isCrafted) return 1;
+            if (!a[1].isCrafted && b[1].isCrafted) return -1;
+            if (a[1].isCrafted && b[1].isCrafted) return a[0].localeCompare(b[0]);
+            return a[1].totalRealChance - b[1].totalRealChance;
+        });
     
     for (const [itemName, data] of sortedItems) {
-        // Look up DisplayCategory from registry
-        const registryItem = itemRegistry ? itemRegistry[itemName] : null;
-        const displayCategory = registryItem ? registryItem.displayCategory : null;
-        
-        const rarity = getAdjustedRarity(
-            data.totalRealChance,
-            data.occurrences,
-            displayCategory
-        );
-        const chance = data.totalRealChance.toFixed(6);
-        
-        lua += `    ["${itemName}"] = { chance = ${chance}, rarity = "${rarity}", occurrences = ${data.occurrences} },\n`;
+        if (data.isCrafted) {
+            lua += `    ["${itemName}"] = { chance = 0, rarity = "crafted", occurrences = 0 },\n`;
+        } else {
+            // Look up DisplayCategory from registry
+            const registryItem = itemRegistry ? itemRegistry[itemName] : null;
+            const displayCategory = registryItem ? registryItem.displayCategory : null;
+            
+            const rarity = getAdjustedRarity(
+                data.totalRealChance,
+                data.occurrences,
+                displayCategory
+            );
+            const chance = data.totalRealChance.toFixed(6);
+            
+            lua += `    ["${itemName}"] = { chance = ${chance}, rarity = "${rarity}", occurrences = ${data.occurrences} },\n`;
+        }
     }
     
     lua += `}
@@ -364,7 +417,8 @@ function printStatistics(itemData, itemRegistry) {
         epic: 0,
         rare: 0,
         uncommon: 0,
-        common: 0
+        common: 0,
+        crafted: 0
     };
     
     let demotedCount = 0;
@@ -377,6 +431,11 @@ function printStatistics(itemData, itemRegistry) {
     let maxItem = '';
     
     for (const [itemName, data] of Object.entries(itemData)) {
+        if (data.isCrafted) {
+            stats.crafted++;
+            continue;
+        }
+        
         const registryItem = itemRegistry ? itemRegistry[itemName] : null;
         const displayCategory = registryItem ? registryItem.displayCategory : null;
         
@@ -413,15 +472,20 @@ function printStatistics(itemData, itemRegistry) {
         }
     }
     
+    const totalItems = Object.keys(itemData).length;
+    const lootItems = totalItems - stats.crafted;
+    
     console.log('\n=== RARITY STATISTICS ===\n');
-    console.log(`Total items in loot tables: ${Object.keys(itemData).length}`);
+    console.log(`Total items: ${totalItems} (${lootItems} loot + ${stats.crafted} crafted)`);
     console.log('');
-    console.log('Distribution:');
+    console.log('Loot Distribution:');
     console.log(`  Legendary: ${stats.legendary} items`);
     console.log(`  Epic:      ${stats.epic} items`);
     console.log(`  Rare:      ${stats.rare} items`);
     console.log(`  Uncommon:  ${stats.uncommon} items`);
     console.log(`  Common:    ${stats.common} items`);
+    console.log('');
+    console.log(`Crafted (no loot): ${stats.crafted} items`);
     console.log('');
     console.log('Adjustments applied:');
     console.log(`  Confidence demotions: ${demotedCount} items (low occurrences)`);
@@ -488,6 +552,11 @@ function main() {
     console.log('\nProcessing derived items (box -> contents)...');
     const derivedCount = processDerivedItems(itemData);
     console.log(`  Created ${derivedCount} derived item entries`);
+    
+    // Process crafted items (items not in loot but craftable)
+    console.log('\nProcessing crafted items...');
+    const craftedCount = processCraftedItems(itemData, itemRegistry);
+    console.log(`  Added ${craftedCount} crafted item entries`);
     
     // Print statistics
     printStatistics(itemData, itemRegistry);
