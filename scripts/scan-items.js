@@ -4,7 +4,14 @@
  * Parses all media/scripts/*.txt files from the game install
  * and extracts every item definition with its DisplayCategory and Type.
  * 
- * Output: all-items.json - a complete registry of every item in the game.
+ * Auto-detects game version and outputs:
+ *   B41 -> all-items-b41.json
+ *   B42 -> all-items-b42.json
+ * 
+ * Usage:
+ *   node scan-items.js          Auto-detect version
+ *   node scan-items.js --b41    Force B41
+ *   node scan-items.js --b42    Force B42
  */
 
 const fs = require('fs');
@@ -14,7 +21,19 @@ const path = require('path');
 const PZ_PATH = 'C:\\Program Files (x86)\\Steam\\steamapps\\common\\ProjectZomboid';
 const SCRIPTS_PATH = path.join(PZ_PATH, 'media', 'scripts');
 const PROJECT_ROOT = path.join(__dirname, '..');
-const OUTPUT_FILE = path.join(PROJECT_ROOT, 'all-items.json');
+
+// Version detection (same logic as calculate-rarity)
+const VERSION_FLAG = process.argv.find(a => a === '--b41' || a === '--b42');
+
+function detectGameVersion() {
+    if (VERSION_FLAG === '--b41') return 'B41';
+    if (VERSION_FLAG === '--b42') return 'B42';
+    const b42Indicator = path.join(PZ_PATH, 'media', 'scripts', 'generated', 'recipes');
+    return fs.existsSync(b42Indicator) ? 'B42' : 'B41';
+}
+
+const DETECTED_VERSION = detectGameVersion();
+const OUTPUT_FILE = path.join(PROJECT_ROOT, `all-items-${DETECTED_VERSION.toLowerCase()}.json`);
 
 /**
  * Find all recipe files dynamically (B41 + B42 compatible)
@@ -183,8 +202,10 @@ function parseRecipeFiles() {
  * Main function
  */
 function main() {
+    const detectedInfo = VERSION_FLAG ? '(manual)' : '(auto-detected)';
     console.log('Item Scanner for Project Zomboid');
-    console.log('================================\n');
+    console.log('================================');
+    console.log(`Version: ${DETECTED_VERSION} ${detectedInfo} | Output: ${path.basename(OUTPUT_FILE)}\n`);
     
     // Check if PZ path exists
     if (!fs.existsSync(SCRIPTS_PATH)) {
