@@ -2,25 +2,29 @@
  * Deploy to Steam Workshop folder
  * 
  * Creates the Workshop upload structure at C:\Users\ems_f\Zomboid\Workshop
- * following the same layout as modTemplate:
+ * with B41+B42 dual compatibility:
  * 
  *   Workshop/
  *     item-rarity-ui/
- *       preview.png                  (poster.png renamed)
+ *       preview.png
  *       Contents/
  *         mods/
  *           item-rarity-ui/
- *             mod.info
- *             poster.png
- *             media/lua/client/ItemRarityUI.lua
- *             media/lua/shared/ItemRarityData.lua
+ *             mod.info              <-- B41
+ *             poster.png            <-- B41
+ *             media/...             <-- B41
+ *             common/               <-- B42 (mandatory, empty)
+ *             42/                   <-- B42
+ *               mod.info
+ *               poster.png
+ *               media/...
  * 
  * Usage: node deploy-to-steam.js
  */
 
 const fs = require('fs');
 const path = require('path');
-const { MOD_ID, MOD_FILES } = require('./mod-config');
+const { MOD_ID, deployDualStructure } = require('./mod-config');
 
 const ROOT = path.join(__dirname, '..');
 const WORKSHOP_BASE = 'C:\\Users\\ems_f\\Zomboid\\Workshop';
@@ -39,6 +43,15 @@ function copyFile(src, dest) {
 }
 
 /**
+ * Create a directory (recursive)
+ */
+function mkdirSafe(dir) {
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+    }
+}
+
+/**
  * Remove a directory recursively
  */
 function cleanDir(dir) {
@@ -54,8 +67,8 @@ function formatSize(size) {
 }
 
 function main() {
-    console.log('Deploy to Steam Workshop');
-    console.log('========================\n');
+    console.log('Deploy to Steam Workshop (B41+B42)');
+    console.log('===================================\n');
 
     // Clean previous Workshop folder
     cleanDir(WORKSHOP_MOD_DIR);
@@ -74,27 +87,12 @@ function main() {
     const previewSize = fs.statSync(posterSrc).size;
     console.log(`  preview.png (${formatSize(previewSize)})`);
 
-    // Copy all mod files to Contents/mods/item-rarity-ui/
-    console.log(`\nContents/mods/${MOD_ID}/`);
-    let totalSize = previewSize;
+    // Deploy dual structure into Contents/mods/item-rarity-ui/
+    console.log(`\nContents/mods/${MOD_ID}/\n`);
+    
+    deployDualStructure(CONTENTS_DIR, ROOT, copyFile, mkdirSafe, console.log);
 
-    for (const file of MOD_FILES) {
-        const src = path.join(ROOT, file);
-        const dest = path.join(CONTENTS_DIR, file);
-
-        if (!fs.existsSync(src)) {
-            console.error(`  MISSING: ${file}`);
-            process.exit(1);
-        }
-
-        copyFile(src, dest);
-        const size = fs.statSync(src).size;
-        totalSize += size;
-
-        console.log(`  ${file} (${formatSize(size)})`);
-    }
-
-    console.log(`\nDeploy complete: ${MOD_FILES.length + 1} files, ${formatSize(totalSize)}`);
+    console.log(`\nDeploy complete!`);
     console.log(`Output: ${WORKSHOP_MOD_DIR}/`);
 }
 

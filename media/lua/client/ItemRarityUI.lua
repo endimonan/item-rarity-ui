@@ -1,7 +1,7 @@
 --***********************************************************
 --**                    ITEM RARITY UI                      **
 --**           Colored item names by rarity                 **
---**           Compatible with Build 41                     **
+--**       Compatible with Build 41 and Build 42            **
 --**                                                        **
 --**  Using Weighted Real Chance calculation method:        **
 --**  For each item, sum(weight/listTotal) across all lists **
@@ -10,6 +10,16 @@
 require "ISUI/ISInventoryPane"
 
 ItemRarityUI = ItemRarityUI or {}
+
+-- Detect game version
+ItemRarityUI.gameVersion = getCore and getCore():getVersionNumber() or "unknown"
+ItemRarityUI.isB42 = false
+if type(ItemRarityUI.gameVersion) == "string" then
+    local major = tonumber(ItemRarityUI.gameVersion:match("^(%d+)"))
+    if major and major >= 42 then
+        ItemRarityUI.isB42 = true
+    end
+end
 
 -- Configuration
 ItemRarityUI.colorItemNames = true
@@ -518,25 +528,33 @@ function ISInventoryPane:createChildren()
     original_createChildren(self)
     
     -- Add Rarity column button after the existing columns (using ISResizableButton for resize support)
-    if ItemRarityUI.showRarityColumn and ISResizableButton then
-        local btnWid = ItemRarityUI.rarityColumnWidth
-        local btnHgt = self.headerHgt or 16
-        
-        -- Create rarity header as resizable button (like the Type column)
-        self.rarityHeader = ISResizableButton:new(0, 0, btnWid, btnHgt, ItemRarityUI.getText("Rarity"), self, ISInventoryPane.onSortByRarity)
-        self.rarityHeader.borderColor = {r=0, g=0, b=0, a=0.2}
-        self.rarityHeader.backgroundColor = {r=0, g=0, b=0, a=0.0}
-        self.rarityHeader.backgroundColorMouseOver = {r=0.3, g=0.3, b=0.3, a=1.0}
-        self.rarityHeader.textColor = { r = 1, g = 1, b = 1, a = 1 }
-        self.rarityHeader.font = self.headerFont or UIFont.Small
-        self.rarityHeader.minimumWidth = 30
-        self.rarityHeader.maximumWidth = 200
-        self.rarityHeader.resizeLeft = true  -- Resize from left edge
-        self.rarityHeader.onresize = { ISInventoryPane.onResizeRarityColumn, self, self.rarityHeader }
-        self.rarityHeader:initialise()
-        self:addChild(self.rarityHeader)
-        
-        self.hasRarityColumn = true
+    -- Wrapped in pcall for B42 compatibility
+    local ok, err = pcall(function()
+        if ItemRarityUI.showRarityColumn and ISResizableButton then
+            local btnWid = ItemRarityUI.rarityColumnWidth
+            local btnHgt = self.headerHgt or 16
+            
+            -- Create rarity header as resizable button (like the Type column)
+            self.rarityHeader = ISResizableButton:new(0, 0, btnWid, btnHgt, ItemRarityUI.getText("Rarity"), self, ISInventoryPane.onSortByRarity)
+            self.rarityHeader.borderColor = {r=0, g=0, b=0, a=0.2}
+            self.rarityHeader.backgroundColor = {r=0, g=0, b=0, a=0.0}
+            self.rarityHeader.backgroundColorMouseOver = {r=0.3, g=0.3, b=0.3, a=1.0}
+            self.rarityHeader.textColor = { r = 1, g = 1, b = 1, a = 1 }
+            self.rarityHeader.font = self.headerFont or UIFont.Small
+            self.rarityHeader.minimumWidth = 30
+            self.rarityHeader.maximumWidth = 200
+            self.rarityHeader.resizeLeft = true  -- Resize from left edge
+            self.rarityHeader.onresize = { ISInventoryPane.onResizeRarityColumn, self, self.rarityHeader }
+            self.rarityHeader:initialise()
+            self:addChild(self.rarityHeader)
+            
+            self.hasRarityColumn = true
+        end
+    end)
+    if not ok then
+        print("[ItemRarityUI] WARNING: createChildren hook failed: " .. tostring(err))
+        print("[ItemRarityUI] Rarity column disabled - UI may have changed in this game version")
+        ItemRarityUI.showRarityColumn = false
     end
 end
 
@@ -623,17 +641,23 @@ function ISInventoryPane:prerender()
         ItemRarityUI.loadRarityData()
     end
     
-    -- Position rarity header
+    -- Position rarity header (pcall for B42 safety)
     if self.rarityHeader and self.column3 then
-        local typeColWidth = self.column4 - self.column3
-        local effectiveWidth = ItemRarityUI.getEffectiveColumnWidth(typeColWidth)
-        local rarityX = self.column3 + typeColWidth - effectiveWidth - 5
-        
-        self.rarityHeader:setX(rarityX)
-        self.rarityHeader:setY(0)
-        self.rarityHeader:setWidth(effectiveWidth)
-        self.rarityHeader.maximumWidth = math.floor(typeColWidth * 0.5)
-        self.rarityHeader.title = ItemRarityUI.getText("Rarity")
+        local ok, err = pcall(function()
+            local typeColWidth = self.column4 - self.column3
+            local effectiveWidth = ItemRarityUI.getEffectiveColumnWidth(typeColWidth)
+            local rarityX = self.column3 + typeColWidth - effectiveWidth - 5
+            
+            self.rarityHeader:setX(rarityX)
+            self.rarityHeader:setY(0)
+            self.rarityHeader:setWidth(effectiveWidth)
+            self.rarityHeader.maximumWidth = math.floor(typeColWidth * 0.5)
+            self.rarityHeader.title = ItemRarityUI.getText("Rarity")
+        end)
+        if not ok and not ItemRarityUI._prerenderWarned then
+            print("[ItemRarityUI] WARNING: prerender hook failed: " .. tostring(err))
+            ItemRarityUI._prerenderWarned = true
+        end
     end
     
     return original_prerender(self)
@@ -650,31 +674,37 @@ function ISInventoryPane:renderdetails(doDragged)
         ItemRarityUI.loadRarityData()
     end
     
-    -- Store original drawText
+    -- Colorize item names via drawText override (pcall for B42 safety)
     local origDrawText = self.drawText
-    local pane = self
-    
-    -- Temporarily override drawText to colorize item names
-    self.drawText = function(selfPane, text, x, y, r, g, b, a, font)
-        if ItemRarityUI.colorItemNames and text and selfPane.itemslist then
-            local nameColumnX = selfPane.column2 + 8
-            if math.abs(x - nameColumnX) < 20 then
-                -- Find item by matching text
-                for _, v in ipairs(selfPane.itemslist) do
-                    if v.items and v.items[1] then
-                        local item = v.items[1]
-                        local itemName = item:getName()
-                        if text == itemName or string.sub(text, 1, #itemName) == itemName then
-                            local fullType = item:getFullType()
-                            local color = ItemRarityUI.getColor(fullType)
-                            r, g, b = color.r, color.g, color.b
-                            break
+    local colorizeOk, colorizeErr = pcall(function()
+        self.drawText = function(selfPane, text, x, y, r, g, b, a, font)
+            if ItemRarityUI.colorItemNames and text and selfPane.itemslist then
+                local nameColumnX = selfPane.column2 + 8
+                if math.abs(x - nameColumnX) < 20 then
+                    for _, v in ipairs(selfPane.itemslist) do
+                        if v.items and v.items[1] then
+                            local item = v.items[1]
+                            local itemName = item:getName()
+                            if text == itemName or string.sub(text, 1, #itemName) == itemName then
+                                local fullType = item:getFullType()
+                                local color = ItemRarityUI.getColor(fullType)
+                                r, g, b = color.r, color.g, color.b
+                                break
+                            end
                         end
                     end
                 end
             end
+            return origDrawText(selfPane, text, x, y, r, g, b, a, font)
         end
-        return origDrawText(selfPane, text, x, y, r, g, b, a, font)
+    end)
+    if not colorizeOk then
+        self.drawText = origDrawText
+        if not ItemRarityUI._colorizeWarned then
+            print("[ItemRarityUI] WARNING: colorize hook failed: " .. tostring(colorizeErr))
+            ItemRarityUI._colorizeWarned = true
+            ItemRarityUI.colorItemNames = false
+        end
     end
     
     -- Call original render
@@ -772,7 +802,8 @@ Events.OnGameStart.Add(onGameStart)
 Events.OnLoad.Add(onLoad)
 
 local function onGameBoot()
-    print("[ItemRarityUI] Mod initialized - Build 41 compatible")
+    local buildStr = ItemRarityUI.isB42 and "Build 42" or "Build 41"
+    print("[ItemRarityUI] Mod initialized - " .. buildStr .. " detected (version: " .. tostring(ItemRarityUI.gameVersion) .. ")")
     print("[ItemRarityUI] Using Weighted Real Chance calculation method")
 end
 
