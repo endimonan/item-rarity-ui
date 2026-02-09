@@ -16,12 +16,41 @@ const SCRIPTS_PATH = path.join(PZ_PATH, 'media', 'scripts');
 const PROJECT_ROOT = path.join(__dirname, '..');
 const OUTPUT_FILE = path.join(PROJECT_ROOT, 'all-items.json');
 
-// Recipe files to parse for craftable items
-const RECIPE_FILES = [
-    path.join(SCRIPTS_PATH, 'recipes.txt'),
-    path.join(SCRIPTS_PATH, 'recipes_radio.txt'),
-    path.join(SCRIPTS_PATH, 'evolvedrecipes.txt'),
-];
+/**
+ * Find all recipe files dynamically (B41 + B42 compatible)
+ * B41: scripts/recipes.txt, recipes_radio.txt, evolvedrecipes.txt
+ * B42: scripts/generated/recipes/*.txt, scripts/generated/evolvedrecipes.txt
+ */
+function findRecipeFiles() {
+    const candidates = [];
+
+    // B42: generated/recipes/ folder
+    const generatedRecipesDir = path.join(SCRIPTS_PATH, 'generated', 'recipes');
+    if (fs.existsSync(generatedRecipesDir)) {
+        const files = fs.readdirSync(generatedRecipesDir)
+            .filter(f => f.endsWith('.txt'))
+            .map(f => path.join(generatedRecipesDir, f));
+        candidates.push(...files);
+    }
+
+    // B42: generated/evolvedrecipes.txt
+    const evolvedB42 = path.join(SCRIPTS_PATH, 'generated', 'evolvedrecipes.txt');
+    if (fs.existsSync(evolvedB42)) {
+        candidates.push(evolvedB42);
+    }
+
+    // B41 fallback: scripts root
+    const b41Files = ['recipes.txt', 'recipes_radio.txt', 'evolvedrecipes.txt'];
+    for (const f of b41Files) {
+        const fp = path.join(SCRIPTS_PATH, f);
+        // Only add if not already covered by B42 paths
+        if (fs.existsSync(fp) && !candidates.includes(fp)) {
+            candidates.push(fp);
+        }
+    }
+
+    return candidates;
+}
 
 /**
  * Recursively find all .txt files in a directory
@@ -90,29 +119,48 @@ function parseScriptFile(filePath) {
 
 /**
  * Parse recipe files and extract all craftable item results
+ * Supports both B41 and B42 recipe formats:
+ *   B41: "recipe Name { Result:ItemName, ... }"
+ *   B42: "craftRecipe Name { outputs { item N Module.ItemName, } }"
  */
 function parseRecipeFiles() {
     const craftableItems = new Set();
     
-    for (const filePath of RECIPE_FILES) {
+    const recipeFiles = findRecipeFiles();
+    console.log(`  Found ${recipeFiles.length} recipe files`);
+    
+    for (const filePath of recipeFiles) {
         if (!fs.existsSync(filePath)) continue;
         
         const content = fs.readFileSync(filePath, 'utf8');
         const fileName = path.basename(filePath);
+        const before = craftableItems.size;
         
-        // Match standard recipes: Result:ItemName or Result:ItemName=count
+        // B42 format: "outputs { item N Base.ItemName, }" or "item N Base.ItemName flags[...],"
+        const b42OutputRegex = /\boutputs\s*\{([^}]*)\}/g;
+        let outputMatch;
+        while ((outputMatch = b42OutputRegex.exec(content)) !== null) {
+            const outputBlock = outputMatch[1];
+            // Match: item <count> <Module.ItemName> or item <count> [Module.ItemName;...]
+            const itemLineRegex = /item\s+\d+\s+(\w+\.\w+)/g;
+            let itemMatch;
+            while ((itemMatch = itemLineRegex.exec(outputBlock)) !== null) {
+                craftableItems.add(itemMatch[1]);
+            }
+        }
+        
+        // B41 format: Result:ItemName or Result:ItemName=count
         const resultRegex = /Result\s*:\s*(\w[\w.]*)/g;
         let match;
         while ((match = resultRegex.exec(content)) !== null) {
             let itemName = match[1];
-            // Add Base. prefix if no module specified
             if (!itemName.includes('.')) {
                 itemName = 'Base.' + itemName;
             }
             craftableItems.add(itemName);
         }
         
-        // Match evolved recipes: ResultItem:ItemName
+        // B41 evolved recipes: ResultItem:ItemName
         const evolvedRegex = /ResultItem\s*:\s*(\w[\w.]*)/g;
         while ((match = evolvedRegex.exec(content)) !== null) {
             let itemName = match[1];
@@ -122,7 +170,10 @@ function parseRecipeFiles() {
             craftableItems.add(itemName);
         }
         
-        console.log(`  ${fileName}: ${craftableItems.size} craftable items (cumulative)`);
+        const added = craftableItems.size - before;
+        if (added > 0) {
+            console.log(`  ${fileName}: +${added} (total: ${craftableItems.size})`);
+        }
     }
     
     return craftableItems;

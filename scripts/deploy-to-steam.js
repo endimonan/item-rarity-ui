@@ -10,14 +10,16 @@
  *       Contents/
  *         mods/
  *           item-rarity-ui/
- *             mod.info              <-- B41
- *             poster.png            <-- B41
- *             media/...             <-- B41
- *             common/               <-- B42 (mandatory, empty)
- *             42/                   <-- B42
+ *             mod.info                              <-- B41
+ *             poster.png                            <-- B41
+ *             media/lua/shared/ItemRarityData.lua   <-- B41 rarity data
+ *             media/lua/client/ItemRarityUI.lua     <-- shared UI code
+ *             common/                               <-- B42 (mandatory, empty)
+ *             42/                                   <-- B42
  *               mod.info
  *               poster.png
- *               media/...
+ *               media/lua/shared/ItemRarityData.lua <-- B42 rarity data
+ *               media/lua/client/ItemRarityUI.lua
  * 
  * Usage: node deploy-to-steam.js
  */
