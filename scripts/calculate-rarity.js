@@ -975,19 +975,21 @@ function processManualOverrides(itemData) {
 // ============================================================
 
 /**
- * Add default rarity entries for ALL items in the registry that:
- * - Are NOT in any loot table
- * - Are NOT craftable
- * - Are NOT system/invisible items
+ * Smart default rarity for items not covered by loot tables, crafting,
+ * zombie drops, forage, or manual overrides.
  * 
- * These are typically zombie-drop-only items, outfit pieces, or items
- * from special spawns not covered by distribution files.
- * Default rarity: "uncommon" (not in standard loot containers)
+ * Instead of blanket "uncommon", assigns rarity based on:
+ * 1. displayCategory (from item definitions)
+ * 2. Name patterns (crafted materials, cooked food, etc.)
+ * 3. Item characteristics
+ * 
+ * Returns { added, breakdown } with counts per assigned type.
  */
 function processRemainingItems(itemData, itemRegistry) {
     if (!itemRegistry) return 0;
     
     let addedCount = 0;
+    const breakdown = { crafted: 0, common: 0, uncommon: 0, rare: 0 };
     
     // Categories of items that players never see or that are system-only
     const skipCategories = [
@@ -998,6 +1000,126 @@ function processRemainingItems(itemData, itemRegistry) {
         'Generic', 'Animal',
     ];
     
+    // Categories whose items are almost always player-crafted when not in loot
+    const craftedCategories = [
+        'WeaponCrafted',    // spiked bats, flint knives, etc
+        'BrokenWeapon',     // broken crafted weapons
+        'Explosives',       // sensor bombs, remote traps
+    ];
+    
+    // Categories whose items are common world objects / environmental
+    const commonCategories = [
+        'Furniture',        // skull mounts, moveable objects
+        'VehicleMaintenance', // gas tanks, trunk doors, bumpers
+        'Junk',             // props, dummy items
+        'Water',            // test items
+        'Fishing',          // fish guts, broken nets, fishing trash
+        'MaterialWeapon',   // stone, steel rod halves, fork heads
+        'JunkWeapon',       // spade heads, makeshift stuff
+        'FishingWeapon',    // broken fishing rod
+        'HouseholdWeapon',  // plunger spear etc
+    ];
+    
+    // Categories whose items are rare finds / collectibles
+    const rareCategories = [
+        'Memento',          // gems, crystals, friendship bracelets
+    ];
+    
+    // Name patterns that indicate crafted/player-made items
+    const craftedNamePatterns = [
+        // Crafting intermediates & products
+        /Ingot|Nugget$/i,
+        /Carved|Mold(?:ed)?|Unfired|Untreated|Assembled|Kiln|Forge[d]?$|Smelt/i,
+        /Crude(?:Saw|Sword|ShortSword|Bench)|^Flint(?!stone)/i,
+        // Crafted clothing from raw materials
+        /(?:_|\b)(?:Burlap|Rag|Fur|Tarp|GarbageBag)(?:_|\b)/i,
+        /(?:_|\b)(?:Knitted|Crocheted|Woven)(?:_|\b)/i,
+        /(?:_|\b)(?:Chainmail|CoatOfPlates|Plated|MetalSheet_)(?:_|\b)/i,
+        // Hide/leather crafted items (but not leather jacket from loot)
+        /(?:_|\b)Hide(?:_|Tent|$)/i,
+        /(?:_|\b)Rawhide(?:_|$)/i,
+        // Bone crafting
+        /(?:^|_)Bone(?:_|Knife|Needle|$)/i,
+        /Antler(?:_|$)|Sinew|Tallow|Pelt(?:_|$)/i,
+        // Pottery & glass
+        /Clay(?!more)(?:Plate|Bowl|Cup|Pot|Mug|Vase|Jar|Jug|Crucible|Canteen|Cement)/i,
+        /Ceramic(?:Teacup|Bowl|Plate|Mug)/i,
+        // Cooked/prepared food not in COOKED_AND_FILLED_ITEMS
+        /Cooked|Grilled|Fried|Boiled|Roasted|Baked|Smoked|Dried|Jerky/i,
+        /Stew|Soup|Sandwich|Burger|Salad|Muffin|Porridge|Recipe$/i,
+        /Baguette(?:Sandwich|Slice)|BakingTray_/i,
+        // Filled containers
+        /WaterFull|PetrolFull|Full$|ClayCement|ConcreteFull|PlasterFull|WallpaperPaste/i,
+        // Animal butchering results
+        /Animal_(?:Brain|Heart|Intestines|Liver|Tongue|Fat|Stomach)/i,
+        /Bull_Head_|Cow_Head_|Deer.*_Head_|Pig_Head_|Sheep_Head_/i,
+        // Alcohol/medical preparations
+        /AlcoholBandage|AlcoholRippedSheets/i,
+        // Crafted tools
+        /(?:_|\b)Forged(?:_|\b|$)/i,
+        // Crafted explosives / traps with sensors
+        /Sensor(?:V\d)?$/i,
+        // Packed tents / sleeping bags from crafting
+        /_Packed$/i,
+        // Crafted ammo straps
+        /AmmoStrap/i,
+        // Crafted bags
+        /Bag_ClothSatchel|Bag_Crafted/i,
+        // Crafted toys
+        /Crafted_/i,
+        // Crafted weapons patterns
+        /Spiked(?:Bat|Short)|_Nails$|_Spiked$|Morningstar/i,
+        /Mace_(?:Metal|Wood|Stone)|Scrap(?:Cleaver|_)|SpearCrude/i,
+        /SpearKnife|SpearScissors|SpearScrewdriver|SpearHuntingKnife/i,
+        // Lanterns (blacksmithing crafted)
+        /Lantern_Hurricane_(?:Copper|Gold|Silver|Forged)/i,
+        // Crafted cooking items
+        /SkewersWooden|PaintbrushCrafted|KnittingNeedles_Wood/i,
+        // Needle types (crafted)
+        /Needle_(?:Brass|Copper|Iron)/i,
+        // Seed paste, heading tool (crafted intermediates)
+        /SeedPaste|HeadingTool/i,
+        // Sheaf items (harvested crops)
+        /Sheaf$/i,
+    ];
+    
+    // Name patterns for common items (environmental, found everywhere)
+    const commonNamePatterns = [
+        // Seeds and farming basics
+        /Seed$|BagSeed|_Empty$/i,
+        // Vehicle parts (doors, bumpers, etc)
+        /TrunkDoor\d|Hood\d|Door\d|Bumper|Fender|Muffler|Windshield\d|Spoiler|^(?:Big|Normal|Small)(?:GasTank|Trunk)\d/i,
+        // Skull wall mounts and decorative
+        /Skull_Wall|_Wall$/i,
+        // Moveable furniture props
+        /^Mov_/i,
+        // Book props (not readable)
+        /Book_(?:Prop|Classic)|BookFancy_(?:Prop|Classic|Religion)/i,
+        // Animal parts that are environmental drops
+        /AnimalMilkPowder|FishGuts|FishRoeSac|FishingTrash|FISH_DEV/i,
+        // Broken fishing items
+        /Broken(?:FishingNet|FishingRod|$)/i,
+        // Test items
+        /^Test/i,
+        // Umbrella variants
+        /^Umbrella/i,
+        // Map (base item)
+        /^(?:Base\.)?Map$/i,
+        // Empty containers (buckets, bottles)
+        /^Bucket(?:Empty|Carved)/i,
+        /Empty$/i,
+        // Wild herbs/plants (forageable)
+        /^(?:Comfrey|CommonMallow|Plantain|WildGarlic|BlackSage)$/i,
+        // Metal drum (common world object)
+        /^MetalDrum$/i,
+        // Spray paint
+        /^SprayPaint$/i,
+        // Feeding bottle, hot water bottle
+        /^(?:FeedingBottle|HotWaterBottle)$/i,
+        // Cap gun ammo (toy)
+        /^CapGun(?:Cap|CapBox)$/i,
+    ];
+    
     for (const [itemName, regData] of Object.entries(itemRegistry)) {
         // Skip if already has loot data or crafted data
         if (itemData[itemName]) continue;
@@ -1005,16 +1127,178 @@ function processRemainingItems(itemData, itemRegistry) {
         // Skip system/invisible categories
         if (skipCategories.includes(regData.displayCategory)) continue;
         
-        // Add with default rarity (uncommon - not found in standard loot)
-        itemData[itemName] = {
-            totalRealChance: -2,  // sentinel value for "registry default"
-            occurrences: 0,
-            lists: [],
-            isDefault: true
-        };
+        const cat = regData.displayCategory || '';
+        const shortName = itemName.replace(/^Base\./, '');
+        
+        let assignedType = 'uncommon'; // fallback
+        
+        // 1. Check category-based crafted
+        if (craftedCategories.includes(cat)) {
+            assignedType = 'crafted';
+        }
+        // 2. Check category-based common
+        else if (commonCategories.includes(cat)) {
+            assignedType = 'common';
+        }
+        // 3. Check category-based rare
+        else if (rareCategories.includes(cat)) {
+            assignedType = 'rare';
+        }
+        // 4. Check name patterns for crafted
+        else if (craftedNamePatterns.some(p => p.test(shortName))) {
+            assignedType = 'crafted';
+        }
+        // 5. Check name patterns for common
+        else if (commonNamePatterns.some(p => p.test(shortName))) {
+            assignedType = 'common';
+        }
+        // 6. Category-based heuristics for remaining
+        else if (cat === 'Material') {
+            // Materials not in loot or crafted patterns → likely crafting intermediate
+            assignedType = 'crafted';
+        }
+        else if (cat === 'AnimalPart') {
+            // Animal parts from butchering
+            assignedType = 'crafted';
+        }
+        else if (cat === 'Gardening') {
+            // Seeds and gardening items → common
+            assignedType = 'common';
+        }
+        else if (cat === 'Food') {
+            // Food not in loot tables and not matching cook patterns
+            // Could be wild food, caterpillars, fish → common
+            assignedType = 'common';
+        }
+        else if (cat === 'ProtectiveGear') {
+            // Armor and protective gear not in loot → crafted
+            assignedType = 'crafted';
+        }
+        else if (cat === 'Weapon') {
+            // Weapons not in loot → likely crafted (crude swords, long maces)
+            // Except BareHands which is system
+            if (shortName === 'BareHands') {
+                assignedType = 'common';
+            } else {
+                assignedType = 'crafted';
+            }
+        }
+        else if (cat === 'Tool') {
+            // Tools not in loot → likely crafted (anvils, vises, needles)
+            assignedType = 'crafted';
+        }
+        else if (cat === 'LightSource') {
+            // Light sources not in loot → crafted lanterns
+            assignedType = 'crafted';
+        }
+        else if (cat === 'Cooking') {
+            // Cooking items not in loot → crafted
+            assignedType = 'crafted';
+        }
+        else if (cat === 'SportsWeapon') {
+            // Forged barbells etc → crafted
+            assignedType = 'crafted';
+        }
+        else if (cat === 'WaterContainer') {
+            // Empty water containers → common
+            assignedType = 'common';
+        }
+        else if (cat === 'Household') {
+            // Umbrellas etc → uncommon
+            assignedType = 'uncommon';
+        }
+        else if (cat === 'FirstAid') {
+            // Wild herbs not in loot → common (forageable)
+            assignedType = 'common';
+        }
+        else if (cat === 'Bag') {
+            // Crafted bags not in loot → crafted
+            assignedType = 'crafted';
+        }
+        else if (cat === 'Container') {
+            // Special containers (military cases, laundry bags)
+            assignedType = 'uncommon';
+        }
+        else if (cat === 'Camping') {
+            // Tents not in loot → uncommon (useful finds)
+            assignedType = 'uncommon';
+        }
+        else if (cat === 'Appearance') {
+            // Makeup, face paint → uncommon
+            assignedType = 'uncommon';
+        }
+        else if (cat === 'SkillBook') {
+            // Book sets (containers for skill books)
+            assignedType = 'uncommon';
+        }
+        else if (cat === 'Accessory') {
+            // Accessories not in loot: jewelry → rare, others → uncommon
+            if (/Bracelet|Necklace|Ring_|Earring|Piercing|Monocle/i.test(shortName)) {
+                assignedType = 'rare';
+            } else {
+                assignedType = 'uncommon';
+            }
+        }
+        else if (cat === 'Clothing') {
+            // Clothing not in loot or zombie outfits → uncommon
+            assignedType = 'uncommon';
+        }
+        else if (cat === 'Literature') {
+            // Literature not in loot → uncommon
+            assignedType = 'uncommon';
+        }
+        else if (cat === 'Teddy') {
+            // Crafted teddy bears
+            assignedType = 'crafted';
+        }
+        else if (cat === 'WeaponPart') {
+            // Weapon parts not in loot → crafted
+            assignedType = 'crafted';
+        }
+        
+        // Apply the assignment
+        if (assignedType === 'crafted') {
+            itemData[itemName] = {
+                totalRealChance: -3,
+                occurrences: 0,
+                lists: [],
+                isCrafted: true
+            };
+            breakdown.crafted++;
+        } else if (assignedType === 'rare') {
+            itemData[itemName] = {
+                totalRealChance: -2,
+                occurrences: 0,
+                lists: [],
+                isDefault: true,
+                defaultRarity: 'rare'
+            };
+            breakdown.rare++;
+        } else if (assignedType === 'common') {
+            itemData[itemName] = {
+                totalRealChance: -2,
+                occurrences: 0,
+                lists: [],
+                isDefault: true,
+                defaultRarity: 'common'
+            };
+            breakdown.common++;
+        } else {
+            // uncommon (default fallback)
+            itemData[itemName] = {
+                totalRealChance: -2,
+                occurrences: 0,
+                lists: [],
+                isDefault: true,
+                defaultRarity: 'uncommon'
+            };
+            breakdown.uncommon++;
+        }
         
         addedCount++;
     }
+    
+    console.log(`    Breakdown: ${breakdown.crafted} crafted, ${breakdown.common} common, ${breakdown.uncommon} uncommon, ${breakdown.rare} rare`);
     
     return addedCount;
 }
@@ -1065,13 +1349,20 @@ function generateLuaFile(itemData, itemRegistry) {
 ItemRarityData = {
 `;
     
-    // Sort: loot items by rarity (rarest first), then forage, zombie drops, defaults, crafted
+    // Sort: loot items by rarity (rarest first), then forage, zombie drops, defaults (by rarity), crafted
+    const defaultRarityOrder = { rare: 0, uncommon: 1, common: 2 };
     const sortedItems = Object.entries(itemData)
         .sort((a, b) => {
             // Special items go to the end: manual < forage < zombie < defaults < crafted
             const aSpecial = a[1].isCrafted ? 5 : a[1].isDefault ? 4 : a[1].isZombieDrop ? 3 : a[1].isForage ? 2 : a[1].isManualOverride ? 1 : 0;
             const bSpecial = b[1].isCrafted ? 5 : b[1].isDefault ? 4 : b[1].isZombieDrop ? 3 : b[1].isForage ? 2 : b[1].isManualOverride ? 1 : 0;
             if (aSpecial !== bSpecial) return aSpecial - bSpecial;
+            // Within defaults, sort by rarity tier then name
+            if (aSpecial === 4 && bSpecial === 4) {
+                const aR = defaultRarityOrder[a[1].defaultRarity || 'uncommon'] || 1;
+                const bR = defaultRarityOrder[b[1].defaultRarity || 'uncommon'] || 1;
+                if (aR !== bR) return aR - bR;
+            }
             if (aSpecial > 0) return a[0].localeCompare(b[0]);
             return a[1].totalRealChance - b[1].totalRealChance;
         });
@@ -1080,7 +1371,8 @@ ItemRarityData = {
         if (data.isCrafted) {
             lua += `    ["${itemName}"] = { chance = 0, rarity = "crafted", occurrences = 0 },\n`;
         } else if (data.isDefault) {
-            lua += `    ["${itemName}"] = { chance = 0, rarity = "uncommon", occurrences = 0 },\n`;
+            const defRarity = data.defaultRarity || 'uncommon';
+            lua += `    ["${itemName}"] = { chance = 0, rarity = "${defRarity}", occurrences = 0 },\n`;
         } else if (data.isManualOverride) {
             lua += `    ["${itemName}"] = { chance = 0, rarity = "${data.manualRarity}", occurrences = 0 },\n`;
         } else if (data.isForage) {
@@ -1145,7 +1437,8 @@ function printStatistics(itemData, itemRegistry) {
         }
         if (data.isDefault) {
             defaultCount++;
-            stats.uncommon++; // defaults are counted as uncommon
+            const defRarity = data.defaultRarity || 'uncommon';
+            stats[defRarity] = (stats[defRarity] || 0) + 1;
             continue;
         }
         if (data.isManualOverride) {
