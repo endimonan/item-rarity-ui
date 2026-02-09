@@ -2,7 +2,7 @@
  * Build script for Item Rarity UI
  * 
  * Copies mod files into builds/item-rarity-ui/ and optionally
- * deploys to Zomboid/mods for local testing.
+ * deploys to Zomboid/mods for local testing with B41+B42 dual structure.
  * 
  * Usage: node build.js [--deploy]
  * 
@@ -11,7 +11,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { MOD_ID, MOD_FILES } = require('./mod-config');
+const { MOD_ID, MOD_FILES, deployDualStructure } = require('./mod-config');
 
 const ROOT = path.join(__dirname, '..');
 const BUILD_DIR = path.join(ROOT, 'builds', MOD_ID);
@@ -28,6 +28,15 @@ function copyFile(src, dest) {
         fs.mkdirSync(destDir, { recursive: true });
     }
     fs.copyFileSync(src, dest);
+}
+
+/**
+ * Create a directory (recursive)
+ */
+function mkdirSafe(dir) {
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+    }
 }
 
 /**
@@ -79,19 +88,13 @@ function main() {
     
     // Deploy to Zomboid mods folder if --deploy flag
     if (deploy) {
-        console.log('\n--- Deploying to Zomboid mods ---\n');
+        console.log('\n--- Deploying to Zomboid mods (B41+B42) ---\n');
         
         // Clean existing mod folder first
         cleanDir(ZOMBOID_MODS_DIR);
-        console.log(`Cleaned: ${ZOMBOID_MODS_DIR}`);
+        console.log(`Cleaned: ${ZOMBOID_MODS_DIR}\n`);
         
-        for (const file of MOD_FILES) {
-            const src = path.join(ROOT, file);
-            const dest = path.join(ZOMBOID_MODS_DIR, file);
-            
-            copyFile(src, dest);
-            console.log(`  ${file}`);
-        }
+        deployDualStructure(ZOMBOID_MODS_DIR, ROOT, copyFile, mkdirSafe, console.log);
         
         console.log(`\nDeployed to: ${ZOMBOID_MODS_DIR}`);
     } else {
