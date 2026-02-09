@@ -48,6 +48,13 @@ const DISTRIBUTION_FILES = [
 
 const ITEMS_REGISTRY_FILE = path.join(PROJECT_ROOT, 'all-items.json');
 
+// Zombie drop definition files
+const ZOMBIE_WEAPON_DEFS = path.join(PZ_PATH, 'media', 'lua', 'shared', 'Definitions', 'AttachedWeaponDefinitions.lua');
+const ZOMBIE_CLOTHING_DEFS = path.join(PZ_PATH, 'media', 'lua', 'shared', 'Definitions', 'ClothingSelectionDefinitions.lua');
+
+// Foraging definition file (items found by foraging the ground)
+const FORAGE_DEFS = path.join(PZ_PATH, 'media', 'lua', 'shared', 'Foraging', 'forageDefinitions.lua');
+
 // Determine output path based on --b41/--b42 flags
 const VERSION_FLAG = process.argv.find(a => a === '--b41' || a === '--b42');
 const VERSION_LABEL = VERSION_FLAG === '--b41' ? 'B41' : VERSION_FLAG === '--b42' ? 'B42' : 'auto';
@@ -115,6 +122,49 @@ const CATEGORY_MAX_RARITY = {
     'ZedDmg': 'common',       // zombie damage clothing variants
     'Corpse': 'common',       // corpse items
 };
+
+// Manual rarity overrides for items with hardcoded/world spawns
+// that cannot be detected from any data file
+const MANUAL_OVERRIDES = {
+    'Base.Generator': 'rare',        // world object spawn in garages/sheds
+    'Base.Chainsaw': 'rare',         // item exists but no loot table entry
+    'Base.BookBlacksmith1': 'rare',   // B42 skill books
+    'Base.BookBlacksmith2': 'rare',
+    'Base.BookBlacksmith3': 'rare',
+    'Base.BookBlacksmith4': 'rare',
+    'Base.BookBlacksmith5': 'rare',
+    'Base.SmithingMag1': 'rare',      // B42 smithing magazines
+    'Base.SmithingMag2': 'rare',
+    'Base.SmithingMag3': 'rare',
+    'Base.SmithingMag4': 'rare',
+};
+
+// Items that are results of cooking/filling/player actions, not loot
+// These get classified as "crafted" since they are player-made
+const COOKED_AND_FILLED_ITEMS = [
+    // Cooked/prepared food (cooking system, not standard recipes)
+    'Base.EggBoiled', 'Base.EggPoached', 'Base.GrilledCheese', 'Base.Pancakes',
+    'Base.Waffles', 'Base.Guacamole', 'Base.RamenBowl', 'Base.Smore',
+    'Base.DoughRolled', 'Base.ConeIcecreamMelted', 'Base.IcecreamMelted',
+    'Base.ColdCuppa', 'Base.BakingTrayBread', 'Base.Cornmeal',
+    'Base.ColdDrinkRed', 'Base.ColdDrinkSpiffo', 'Base.ColdDrinkWhite',
+    // Water-filled containers (player fills these)
+    'Base.WaterMug', 'Base.WaterBowl', 'Base.WaterPot', 'Base.WaterSaucepan',
+    'Base.WaterTeacup', 'Base.WaterMugRed', 'Base.WaterMugSpiffo',
+    'Base.WaterMugWhite', 'Base.WaterPopBottle', 'Base.WaterBleachBottle',
+    'Base.WaterPaintbucket', 'Base.BucketWaterFull', 'Base.FullKettle',
+    'Base.Mugfull', 'Base.PlasticCupWater', 'Base.GlassTumblerWater',
+    'Base.GlassWineWater', 'Base.BeerWaterFull', 'Base.WhiskeyWaterFull',
+    'Base.WineWaterFull', 'Base.BathTowelWet', 'Base.DishClothWet',
+    'Base.PetrolBleachBottle', 'Base.PetrolPopBottle', 'Base.WhiskeyPetrol',
+    'Base.WinePetrol', 'Base.WaterBottlePetrol',
+    // Farming intermediates
+    'farming.MayonnaiseWaterFull', 'farming.RemouladeWaterFull',
+    'farming.WateredCanFull', 'farming.MayonnaiseHalf', 'farming.RemouladeHalf',
+    'farming.MayonnaiseEmpty', 'farming.RemouladeEmpty',
+    'farming.GardeningSprayFull', 'farming.GardeningSprayMilk',
+    'farming.GardeningSprayCigarettes', 'farming.BaconBits', 'farming.BaconRashers',
+];
 
 // Derived items: items obtained by opening/using container items
 // Key = container item that spawns in loot, Value = item you get from it
@@ -408,6 +458,568 @@ function processCraftedItems(itemData, itemRegistry) {
 }
 
 // ============================================================
+// Zombie Drop Items
+// ============================================================
+
+// Outfit rarity tiers: how rare each profession's zombies are
+// "default" applies to ALL zombies, specific professions are rarer
+const OUTFIT_RARITY = {
+    // Default outfit - every zombie can wear these
+    'default': 'common',
+    // Common professions - many zombies of these types
+    'constructionworker': 'uncommon',
+    'securityguard': 'uncommon',
+    'carpenter': 'uncommon',
+    'burglar': 'uncommon',
+    'generic': 'uncommon',
+    // Moderate professions
+    'fireofficer': 'rare',
+    'policeofficer': 'rare',
+    'parkranger': 'rare',
+    'nurse': 'rare',
+    'doctor': 'rare',
+    'chef': 'rare',
+    'farmer': 'rare',
+    'mechanic': 'uncommon',
+    'fitness': 'uncommon',
+    'hunter': 'rare',
+    // Rare professions
+    'veteran': 'epic',
+    'army': 'epic',
+    'inmate': 'rare',
+    'prisoner': 'rare',
+    'bandit': 'rare',
+    'biker': 'rare',
+    'clown': 'epic',
+    'goth': 'rare',
+    'punk': 'rare',
+    'redneck': 'uncommon',
+    'santa': 'epic',
+    'priest': 'epic',
+    'hockeypsycho': 'epic',
+    'privatemilitia': 'epic',
+    'policeriot': 'epic',
+    'policestate': 'rare',
+};
+
+/**
+ * Parse AttachedWeaponDefinitions.lua and extract weapon rarity data.
+ * 
+ * Structure: each definition has { chance, daySurvived, weapons[] }
+ * - chance is relative weight among all weapon definitions
+ * - daySurvived means rarer (only available later in game)
+ * - weapons[] is list of possible items
+ * 
+ * Returns: Map of itemName -> rarity tier
+ */
+function parseZombieWeapons() {
+    if (!fs.existsSync(ZOMBIE_WEAPON_DEFS)) {
+        console.log('  WARNING: AttachedWeaponDefinitions.lua not found, skipping');
+        return {};
+    }
+    
+    const content = fs.readFileSync(ZOMBIE_WEAPON_DEFS, 'utf8');
+    const weaponItems = {}; // itemName -> { totalChance, minDaySurvived }
+    
+    // Split content by top-level definition boundaries
+    // Find each "AttachedWeaponDefinitions.xxx = {" and extract to the matching close
+    const defNameRegex = /AttachedWeaponDefinitions\.(\w+)\s*=\s*\{/g;
+    let match;
+    const defPositions = [];
+    
+    while ((match = defNameRegex.exec(content)) !== null) {
+        defPositions.push({ name: match[1], start: match.index, contentStart: match.index + match[0].length });
+    }
+    
+    let totalChance = 0;
+    const definitions = [];
+    
+    for (let i = 0; i < defPositions.length; i++) {
+        const def = defPositions[i];
+        // Skip non-weapon definitions (like chanceOfAttachedWeapon, attachedWeaponCustomOutfit)
+        if (def.name === 'chanceOfAttachedWeapon' || def.name === 'attachedWeaponCustomOutfit') continue;
+        
+        // Get content from this definition to the next one
+        const endPos = i + 1 < defPositions.length ? defPositions[i + 1].start : content.length;
+        const block = content.substring(def.contentStart, endPos);
+        
+        // Extract chance
+        const chanceMatch = block.match(/chance\s*=\s*(\d+)/);
+        if (!chanceMatch) continue;
+        const chance = parseInt(chanceMatch[1]);
+        
+        // Extract daySurvived
+        const dayMatch = block.match(/daySurvived\s*=\s*(\d+)/);
+        const daySurvived = dayMatch ? parseInt(dayMatch[1]) : 0;
+        
+        // Extract outfit restriction (if any)
+        const outfitMatch = block.match(/outfit\s*=\s*\{([^}]*)\}/);
+        const isOutfitSpecific = !!outfitMatch;
+        
+        // Extract weapons list - find the weapons = { ... } block
+        const weaponsMatch = block.match(/weapons\s*=\s*\{([^}]*)\}/);
+        if (!weaponsMatch) continue;
+        
+        const weaponsList = [];
+        const itemRegex = /"(Base\.\w+)"/g;
+        let itemMatch;
+        while ((itemMatch = itemRegex.exec(weaponsMatch[1])) !== null) {
+            weaponsList.push(itemMatch[1]);
+        }
+        
+        if (weaponsList.length === 0) continue;
+        
+        definitions.push({ chance, daySurvived, weapons: weaponsList, isOutfitSpecific });
+        totalChance += chance;
+    }
+    
+    // Now calculate rarity for each weapon item
+    // Global chance of ANY weapon: 6% (chanceOfAttachedWeapon = 6)
+    // Per-definition share: chance / totalChance
+    // Per-item share: perDefinitionShare / weaponsInDefinition
+    // Day penalty: higher daySurvived = rarer
+    
+    for (const def of definitions) {
+        const defShare = def.chance / totalChance;
+        const perItemShare = defShare / def.weapons.length;
+        
+        // Apply day-survived penalty: items only available late-game are rarer
+        // daySurvived 0 = multiplier 1.0, daySurvived 60 = multiplier 0.1
+        const dayPenalty = 1.0 / (1 + def.daySurvived / 10);
+        
+        // Outfit-specific weapons are rarer (only appear on certain zombie types)
+        const outfitPenalty = def.isOutfitSpecific ? 0.3 : 1.0;
+        
+        const effectiveShare = perItemShare * dayPenalty * outfitPenalty;
+        
+        for (const weaponName of def.weapons) {
+            if (!weaponItems[weaponName]) {
+                weaponItems[weaponName] = { totalShare: 0, minDay: Infinity, maxChance: 0 };
+            }
+            weaponItems[weaponName].totalShare += effectiveShare;
+            weaponItems[weaponName].minDay = Math.min(weaponItems[weaponName].minDay, def.daySurvived);
+            weaponItems[weaponName].maxChance = Math.max(weaponItems[weaponName].maxChance, def.chance);
+        }
+    }
+    
+    // Map effective share to rarity tiers
+    // Higher share = more common on zombies
+    const result = {};
+    for (const [itemName, data] of Object.entries(weaponItems)) {
+        let rarity;
+        if (data.totalShare < 0.005) {
+            // Very rare zombie weapon (Katana: ~0.0014)
+            rarity = 'epic';
+        } else if (data.totalShare < 0.02) {
+            // Rare zombie weapon (Machete, Axe)
+            rarity = 'rare';
+        } else if (data.totalShare < 0.08) {
+            // Uncommon zombie weapon (HuntingKnife, KitchenKnife)
+            rarity = 'uncommon';
+        } else {
+            // Common zombie weapon (Fork, Screwdriver, LetterOpener)
+            rarity = 'common';
+        }
+        result[itemName] = rarity;
+    }
+    
+    console.log(`  Parsed ${definitions.length} weapon definitions, ${Object.keys(result).length} unique weapons`);
+    return result;
+}
+
+/**
+ * Parse ClothingSelectionDefinitions.lua and extract clothing rarity data.
+ * 
+ * Structure: outfits have body slots, each with optional chance and items[]
+ * - default outfit = every zombie can wear these = common
+ * - profession outfits = only specific zombies = uncommon to epic
+ * 
+ * Returns: Map of itemName -> rarity tier
+ */
+function parseZombieClothing() {
+    if (!fs.existsSync(ZOMBIE_CLOTHING_DEFS)) {
+        console.log('  WARNING: ClothingSelectionDefinitions.lua not found, skipping');
+        return {};
+    }
+    
+    const content = fs.readFileSync(ZOMBIE_CLOTHING_DEFS, 'utf8');
+    const clothingItems = {}; // itemName -> best (most common) rarity
+    
+    // Match each outfit definition block:
+    // ClothingSelectionDefinitions.outfitName = { ... }
+    // We need to handle nested braces (Female = { Hat = { items = {...} } })
+    
+    // Strategy: find all outfit names, then for each find all item references
+    const outfitNameRegex = /ClothingSelectionDefinitions\.(\w+)\s*=\s*\{/g;
+    let outfitMatch;
+    const outfitPositions = [];
+    
+    while ((outfitMatch = outfitNameRegex.exec(content)) !== null) {
+        outfitPositions.push({
+            name: outfitMatch[1].toLowerCase(),
+            start: outfitMatch.index
+        });
+    }
+    
+    // For each outfit, extract the content between this definition and the next
+    for (let i = 0; i < outfitPositions.length; i++) {
+        const outfit = outfitPositions[i];
+        const start = outfit.start;
+        const end = i + 1 < outfitPositions.length ? outfitPositions[i + 1].start : content.length;
+        const outfitContent = content.substring(start, end);
+        
+        // Determine rarity based on outfit name
+        const outfitRarity = OUTFIT_RARITY[outfit.name] || 'uncommon';
+        
+        // Extract all item names from this outfit block
+        const itemRefRegex = /"(Base\.\w+)"/g;
+        let itemMatch;
+        while ((itemMatch = itemRefRegex.exec(outfitContent)) !== null) {
+            const itemName = itemMatch[1];
+            
+            // Keep the most common (least rare) tier for each item
+            // An item in "default" outfit is common even if it also appears in "police"
+            if (!clothingItems[itemName]) {
+                clothingItems[itemName] = outfitRarity;
+            } else {
+                // Compare: keep the less rare one
+                const currentIdx = RARITY_ORDER.indexOf(clothingItems[itemName]);
+                const newIdx = RARITY_ORDER.indexOf(outfitRarity);
+                if (newIdx > currentIdx) {
+                    clothingItems[itemName] = outfitRarity; // less rare = higher index
+                }
+            }
+        }
+    }
+    
+    console.log(`  Parsed ${outfitPositions.length} outfit definitions, ${Object.keys(clothingItems).length} unique clothing items`);
+    return clothingItems;
+}
+
+// ============================================================
+// Foraging Items
+// ============================================================
+
+// Map forage tier names to our standard rarity tiers
+const FORAGE_TIER_MAP = {
+    // Exact tier names used in forageDefinitions.lua
+    'normal': 'common',
+    'common': 'common',
+    'generic': 'common',       // berries
+    'specific': 'common',      // berries
+    'winter': 'uncommon',      // berries
+    'poison': 'uncommon',      // berries
+    'uncommon': 'uncommon',
+    'unlikely': 'uncommon',    // junkItems
+    'rare': 'rare',
+    'epic': 'epic',
+    'legendary': 'legendary',
+};
+
+/**
+ * Parse forageDefinitions.lua and extract item rarity data.
+ * 
+ * This file has two types of item definitions:
+ * 1. Individual items in the main forageDefs table (with zone chances)
+ * 2. Generated items from functions like generateClothingDefs(), generateJunkDefs(), etc.
+ *    These have explicit tier names (common, uncommon, rare, epic, legendary)
+ * 
+ * Returns: Map of itemFullName -> rarity tier
+ */
+function parseForageDefinitions() {
+    if (!fs.existsSync(FORAGE_DEFS)) {
+        console.log('  WARNING: forageDefinitions.lua not found, skipping');
+        return {};
+    }
+    
+    const content = fs.readFileSync(FORAGE_DEFS, 'utf8');
+    const forageItems = {}; // itemFullName -> rarity
+    
+    // ---- PART 1: Parse generated functions with explicit tiers ----
+    // Strategy: find each `items = { ... }` block, extract items, then look backwards
+    // for the tier name. This avoids complex nested-brace regex.
+    
+    // Find all function bodies: generateXXXDefs() ... end
+    const funcRegex = /local function (generate\w+Defs)\(\)([\s\S]*?)^end/gm;
+    let funcMatch;
+    let generatedCount = 0;
+    
+    while ((funcMatch = funcRegex.exec(content)) !== null) {
+        const funcName = funcMatch[1];
+        const funcBody = funcMatch[2];
+        
+        // Find all `items = { ... }` blocks in this function
+        const itemsBlockRegex = /items\s*=\s*\{([^}]*)\}/g;
+        let itemsMatch;
+        
+        // Build a regex for known tier names only
+        const knownTierNames = Object.keys(FORAGE_TIER_MAP).join('|');
+        const tierSearchRegex = new RegExp(`(${knownTierNames})\\s*=\\s*\\{`, 'gi');
+        
+        while ((itemsMatch = itemsBlockRegex.exec(funcBody)) !== null) {
+            const itemsBlock = itemsMatch[1];
+            const itemsPos = itemsMatch.index;
+            
+            // Look backwards from `items = {` to find the nearest known tier name
+            const textBefore = funcBody.substring(Math.max(0, itemsPos - 1000), itemsPos);
+            const allTierMatches = [...textBefore.matchAll(tierSearchRegex)];
+            
+            if (allTierMatches.length === 0) continue;
+            const tierName = allTierMatches[allTierMatches.length - 1][1].toLowerCase();
+            
+            const ourRarity = FORAGE_TIER_MAP[tierName];
+            if (!ourRarity) continue; // skip unknown tier names (like "spawnFuncs")
+            
+            // Extract item full names: "Base.ItemName" or "camping.ItemName"
+            const itemNameRegex = /"((?:Base|camping)\.\w+)"/g;
+            let itemMatch;
+            
+            while ((itemMatch = itemNameRegex.exec(itemsBlock)) !== null) {
+                const itemFullName = itemMatch[1];
+                
+                // Keep the rarest tier if item appears in multiple tiers
+                if (!forageItems[itemFullName]) {
+                    forageItems[itemFullName] = ourRarity;
+                } else {
+                    const currentIdx = RARITY_ORDER.indexOf(forageItems[itemFullName]);
+                    const newIdx = RARITY_ORDER.indexOf(ourRarity);
+                    if (newIdx < currentIdx) {
+                        forageItems[itemFullName] = ourRarity; // rarer = lower index
+                    }
+                }
+                generatedCount++;
+            }
+        }
+    }
+    
+    // ---- PART 2: Parse individual forageDefs items ----
+    // Pattern: forageDefs[ItemName] or ItemName = { type = "Base.ItemName", ... zones = { Zone = chance, ... } }
+    // These are in the main forageDefs = { ... } table at the top of the file
+    
+    // Find the main forageDefs table (everything before the first generateXXXDefs function)
+    const mainTableEnd = content.indexOf('local function generate');
+    const mainTable = mainTableEnd > 0 ? content.substring(0, mainTableEnd) : '';
+    
+    // Parse individual items: ItemName = { type = "Base.XXX", ... categories = { "Cat" }, zones = { ... } }
+    const individualRegex = /\w+\s*=\s*\{[^}]*type\s*=\s*"((?:Base|camping)\.\w+)"[^}]*categories\s*=\s*\{\s*"(\w+)"/g;
+    let indMatch;
+    let individualCount = 0;
+    
+    while ((indMatch = individualRegex.exec(mainTable)) !== null) {
+        const itemFullName = indMatch[1];
+        const category = indMatch[2];
+        
+        if (forageItems[itemFullName]) continue; // already have from generated
+        
+        // Map category to rarity
+        let rarity;
+        switch (category) {
+            case 'ForestRarities':
+                rarity = 'rare';
+                break;
+            case 'Plants':
+            case 'Insects':
+            case 'FishBait':
+                rarity = 'common';
+                break;
+            case 'MedicinalPlants':
+                rarity = 'uncommon';
+                break;
+            default:
+                rarity = 'uncommon';
+        }
+        
+        forageItems[itemFullName] = rarity;
+        individualCount++;
+    }
+    
+    console.log(`  Parsed forageDefinitions: ${generatedCount} generated items + ${individualCount} individual items = ${Object.keys(forageItems).length} unique`);
+    return forageItems;
+}
+
+/**
+ * Apply forage rarity data to items NOT already in loot tables or crafted.
+ * Returns: count of items added
+ */
+function processForageItems(itemData) {
+    console.log('  Parsing forage definitions...');
+    const forageRarity = parseForageDefinitions();
+    
+    let addedCount = 0;
+    for (const [itemName, rarity] of Object.entries(forageRarity)) {
+        if (itemData[itemName]) continue; // already has loot/crafted data
+        
+        itemData[itemName] = {
+            totalRealChance: -4,  // sentinel value for forage item
+            occurrences: 0,
+            lists: [],
+            isForage: true,
+            forageRarity: rarity
+        };
+        addedCount++;
+    }
+    
+    console.log(`  Forage items added: ${addedCount} (${Object.keys(forageRarity).length - addedCount} already in loot tables)`);
+    return addedCount;
+}
+
+/**
+ * Process zombie drop items: weapons stuck in zombies + clothing worn by zombies.
+ * Only applies to items NOT already in loot tables or crafted.
+ * 
+ * Returns: count of items added
+ */
+function processZombieDropItems(itemData) {
+    let addedCount = 0;
+    
+    // Parse both sources
+    console.log('  Parsing zombie weapon definitions...');
+    const zombieWeapons = parseZombieWeapons();
+    
+    console.log('  Parsing zombie clothing definitions...');
+    const zombieClothing = parseZombieClothing();
+    
+    // Merge both sources: weapons take priority over clothing
+    const allZombieItems = {};
+    
+    // Add clothing first
+    for (const [itemName, rarity] of Object.entries(zombieClothing)) {
+        allZombieItems[itemName] = rarity;
+    }
+    
+    // Then weapons (override if present - weapons are generally more interesting)
+    for (const [itemName, rarity] of Object.entries(zombieWeapons)) {
+        const currentIdx = RARITY_ORDER.indexOf(allZombieItems[itemName] || 'common');
+        const newIdx = RARITY_ORDER.indexOf(rarity);
+        // Keep the rarer one for weapons (lower index = rarer)
+        if (!allZombieItems[itemName] || newIdx < currentIdx) {
+            allZombieItems[itemName] = rarity;
+        }
+    }
+    
+    // Apply to itemData: only add items not already present
+    for (const [itemName, rarity] of Object.entries(allZombieItems)) {
+        if (itemData[itemName]) continue; // already has loot/crafted data
+        
+        itemData[itemName] = {
+            totalRealChance: -3,  // sentinel value for zombie drop
+            occurrences: 0,
+            lists: [],
+            isZombieDrop: true,
+            zombieRarity: rarity
+        };
+        addedCount++;
+    }
+    
+    console.log(`  Total zombie-drop items added: ${addedCount}`);
+    return addedCount;
+}
+
+// ============================================================
+// Cooked/Filled Items (player-made, not loot)
+// ============================================================
+
+/**
+ * Mark cooked food, water-filled containers, and farming intermediates as "crafted".
+ * These are results of player actions (cooking, filling) not found as loot.
+ * Only applies to items NOT already in loot tables.
+ */
+function processCookedAndFilledItems(itemData) {
+    let addedCount = 0;
+    
+    for (const itemName of COOKED_AND_FILLED_ITEMS) {
+        if (itemData[itemName]) continue; // already has loot/crafted data
+        
+        itemData[itemName] = {
+            totalRealChance: -1,  // sentinel value for crafted
+            occurrences: 0,
+            lists: [],
+            isCrafted: true
+        };
+        addedCount++;
+    }
+    
+    return addedCount;
+}
+
+// ============================================================
+// Manual Overrides (hardcoded world spawns)
+// ============================================================
+
+/**
+ * Apply manual rarity overrides for items that spawn via hardcoded
+ * mechanisms (world objects, special events) not covered by any data file.
+ * Only applies to items NOT already classified by loot tables, forage, etc.
+ */
+function processManualOverrides(itemData) {
+    let addedCount = 0;
+    
+    for (const [itemName, rarity] of Object.entries(MANUAL_OVERRIDES)) {
+        if (itemData[itemName]) continue; // already has data from another source
+        
+        itemData[itemName] = {
+            totalRealChance: -5,  // sentinel value for manual override
+            occurrences: 0,
+            lists: [],
+            isManualOverride: true,
+            manualRarity: rarity
+        };
+        addedCount++;
+    }
+    
+    return addedCount;
+}
+
+// ============================================================
+// Remaining Items (fill gaps from item registry)
+// ============================================================
+
+/**
+ * Add default rarity entries for ALL items in the registry that:
+ * - Are NOT in any loot table
+ * - Are NOT craftable
+ * - Are NOT system/invisible items
+ * 
+ * These are typically zombie-drop-only items, outfit pieces, or items
+ * from special spawns not covered by distribution files.
+ * Default rarity: "uncommon" (not in standard loot containers)
+ */
+function processRemainingItems(itemData, itemRegistry) {
+    if (!itemRegistry) return 0;
+    
+    let addedCount = 0;
+    
+    // Categories of items that players never see or that are system-only
+    const skipCategories = [
+        'ZedDmg', 'Wound', 'Bandage', 'Hidden', 'Corpse', 
+        'MaleBody', 'Bug', 'Tail', 'Fox', 'Bunny', 'Duck', 
+        'Frog', 'Raccoon', 'Bear', 'Badger', 'Eye', 'Squirrel', 
+        'Beaver', 'Mole', 'Hedgehog', 'Dog', 'Goblin', 'Spider',
+        'Generic', 'Animal',
+    ];
+    
+    for (const [itemName, regData] of Object.entries(itemRegistry)) {
+        // Skip if already has loot data or crafted data
+        if (itemData[itemName]) continue;
+        
+        // Skip system/invisible categories
+        if (skipCategories.includes(regData.displayCategory)) continue;
+        
+        // Add with default rarity (uncommon - not found in standard loot)
+        itemData[itemName] = {
+            totalRealChance: -2,  // sentinel value for "registry default"
+            occurrences: 0,
+            lists: [],
+            isDefault: true
+        };
+        
+        addedCount++;
+    }
+    
+    return addedCount;
+}
+
+// ============================================================
 // Output Generation
 // ============================================================
 
@@ -435,6 +1047,11 @@ function generateLuaFile(itemData, itemRegistry) {
     - Category cap: Junk/Hidden/ZedDmg items capped at lower tiers
     - Derived items: Box contents inherit rarity from their container
     - Crafted items: Items not in loot tables but craftable via recipes
+    - Cooked/filled: Cooking results and water-filled containers → crafted
+    - Forage items: Items from forageDefinitions.lua (with explicit game-defined tiers)
+    - Zombie drops: Items from AttachedWeaponDefinitions + ClothingSelectionDefinitions
+    - Manual overrides: Hardcoded world spawns (Generator, Chainsaw, Blacksmith books)
+    - Default items: All remaining game items → uncommon
     
     Thresholds:
     - Legendary: < ${RARITY_THRESHOLDS.legendary} (3+ occurrences required)
@@ -448,19 +1065,28 @@ function generateLuaFile(itemData, itemRegistry) {
 ItemRarityData = {
 `;
     
-    // Sort: loot items by rarity (rarest first), crafted at the end
+    // Sort: loot items by rarity (rarest first), then forage, zombie drops, defaults, crafted
     const sortedItems = Object.entries(itemData)
         .sort((a, b) => {
-            // Crafted items go to the end
-            if (a[1].isCrafted && !b[1].isCrafted) return 1;
-            if (!a[1].isCrafted && b[1].isCrafted) return -1;
-            if (a[1].isCrafted && b[1].isCrafted) return a[0].localeCompare(b[0]);
+            // Special items go to the end: manual < forage < zombie < defaults < crafted
+            const aSpecial = a[1].isCrafted ? 5 : a[1].isDefault ? 4 : a[1].isZombieDrop ? 3 : a[1].isForage ? 2 : a[1].isManualOverride ? 1 : 0;
+            const bSpecial = b[1].isCrafted ? 5 : b[1].isDefault ? 4 : b[1].isZombieDrop ? 3 : b[1].isForage ? 2 : b[1].isManualOverride ? 1 : 0;
+            if (aSpecial !== bSpecial) return aSpecial - bSpecial;
+            if (aSpecial > 0) return a[0].localeCompare(b[0]);
             return a[1].totalRealChance - b[1].totalRealChance;
         });
     
     for (const [itemName, data] of sortedItems) {
         if (data.isCrafted) {
             lua += `    ["${itemName}"] = { chance = 0, rarity = "crafted", occurrences = 0 },\n`;
+        } else if (data.isDefault) {
+            lua += `    ["${itemName}"] = { chance = 0, rarity = "uncommon", occurrences = 0 },\n`;
+        } else if (data.isManualOverride) {
+            lua += `    ["${itemName}"] = { chance = 0, rarity = "${data.manualRarity}", occurrences = 0 },\n`;
+        } else if (data.isForage) {
+            lua += `    ["${itemName}"] = { chance = 0, rarity = "${data.forageRarity}", occurrences = 0 },\n`;
+        } else if (data.isZombieDrop) {
+            lua += `    ["${itemName}"] = { chance = 0, rarity = "${data.zombieRarity}", occurrences = 0 },\n`;
         } else {
             // Look up DisplayCategory from registry
             const registryItem = itemRegistry ? itemRegistry[itemName] : null;
@@ -507,9 +1133,34 @@ function printStatistics(itemData, itemRegistry) {
     let minItem = '';
     let maxItem = '';
     
+    let defaultCount = 0;
+    let zombieDropCount = 0;
+    let forageCount = 0;
+    let manualCount = 0;
+    
     for (const [itemName, data] of Object.entries(itemData)) {
         if (data.isCrafted) {
             stats.crafted++;
+            continue;
+        }
+        if (data.isDefault) {
+            defaultCount++;
+            stats.uncommon++; // defaults are counted as uncommon
+            continue;
+        }
+        if (data.isManualOverride) {
+            manualCount++;
+            stats[data.manualRarity] = (stats[data.manualRarity] || 0) + 1;
+            continue;
+        }
+        if (data.isForage) {
+            forageCount++;
+            stats[data.forageRarity] = (stats[data.forageRarity] || 0) + 1;
+            continue;
+        }
+        if (data.isZombieDrop) {
+            zombieDropCount++;
+            stats[data.zombieRarity] = (stats[data.zombieRarity] || 0) + 1;
             continue;
         }
         
@@ -550,10 +1201,10 @@ function printStatistics(itemData, itemRegistry) {
     }
     
     const totalItems = Object.keys(itemData).length;
-    const lootItems = totalItems - stats.crafted;
+    const lootItems = totalItems - stats.crafted - defaultCount - zombieDropCount - forageCount - manualCount;
     
     console.log('\n=== RARITY STATISTICS ===\n');
-    console.log(`Total items: ${totalItems} (${lootItems} loot + ${stats.crafted} crafted)`);
+    console.log(`Total items: ${totalItems} (${lootItems} loot + ${forageCount} forage + ${zombieDropCount} zombie + ${manualCount} manual + ${defaultCount} default + ${stats.crafted} crafted)`);
     console.log('');
     console.log('Loot Distribution:');
     console.log(`  Legendary: ${stats.legendary} items`);
@@ -568,6 +1219,10 @@ function printStatistics(itemData, itemRegistry) {
     console.log(`  Confidence demotions: ${demotedCount} items (low occurrences)`);
     console.log(`  Category caps:        ${cappedCount} items (Junk/Hidden/etc)`);
     console.log(`  Derived items:        ${derivedCount} items (from containers)`);
+    console.log(`  Forage items:         ${forageCount} items (from forageDefinitions.lua)`);
+    console.log(`  Zombie drop items:    ${zombieDropCount} items (from outfit/weapon definitions)`);
+    console.log(`  Manual overrides:     ${manualCount} items (hardcoded world spawns)`);
+    console.log(`  Default (registry):   ${defaultCount} items (not in any source, default uncommon)`);
     console.log('');
     console.log(`Rarest item: ${minItem} (chance: ${minChance.toFixed(6)})`);
     console.log(`Most common: ${maxItem} (chance: ${maxChance.toFixed(6)})`);
@@ -635,6 +1290,29 @@ function main() {
     console.log('\nProcessing crafted items...');
     const craftedCount = processCraftedItems(itemData, itemRegistry);
     console.log(`  Added ${craftedCount} crafted item entries`);
+    
+    // Process cooked/filled items (cooking results, water containers)
+    console.log('\nProcessing cooked/filled items...');
+    const cookedCount = processCookedAndFilledItems(itemData);
+    console.log(`  Added ${cookedCount} cooked/filled item entries as crafted`);
+    
+    // Process zombie drop items (more specific profession-based rarity)
+    console.log('\nProcessing zombie drop items...');
+    processZombieDropItems(itemData);
+    
+    // Process forage items (items found by foraging the ground)
+    console.log('\nProcessing forage items...');
+    processForageItems(itemData);
+    
+    // Process manual overrides (hardcoded world spawns)
+    console.log('\nProcessing manual overrides...');
+    const manualCount = processManualOverrides(itemData);
+    console.log(`  Added ${manualCount} manual override entries`);
+    
+    // Fill remaining items from registry (default rarity for items not covered above)
+    console.log('\nProcessing remaining registry items...');
+    const defaultCount = processRemainingItems(itemData, itemRegistry);
+    console.log(`  Added ${defaultCount} default entries (from all-items.json)`);
     
     // Print statistics
     printStatistics(itemData, itemRegistry);
