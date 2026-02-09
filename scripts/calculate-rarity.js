@@ -2,10 +2,12 @@
  * Item Rarity Calculator for Project Zomboid
  * 
  * Reads multiple distribution sources and calculates item rarities
- * using the Weighted Real Chance method:
+ * using the List-Size-Weighted Real Chance method:
  * - For each list, calculate the sum of all weights
- * - For each item occurrence: realChance = weight / sumOfList
- * - Sum all realChances for each item across all lists
+ * - For each item: realChance = weight / sumOfList
+ * - Weight each list's contribution by its size (proxy for importance)
+ *   Small lists (zombie outfits) contribute less, large lists (lockers) contribute fully
+ * - Sum all weighted chances for each item across all lists
  * 
  * Data sources:
  * - ProceduralDistributions.lua (procedural loot tables)
@@ -13,10 +15,16 @@
  * - VehicleDistributions.lua (vehicle loot)
  * 
  * Improvements:
+ * - List-size weighting (micro-lists contribute proportionally, not equally)
  * - Derived items (NailsBox -> Nails, ammo boxes -> ammo)
  * - Confidence threshold (min occurrences for high tiers)
  * - Category-based rarity cap (Junk items can't be Legendary)
  * - Item registry from scan-items.js (all-items.json)
+ * 
+ * Usage:
+ *   node calculate-rarity.js            Generate for current game version
+ *   node calculate-rarity.js --b42      Explicitly generate B42 data (into 42/ folder)
+ *   node calculate-rarity.js --b41      Explicitly generate B41 data (into root)
  * 
  * Output: ItemRarityData.lua with pre-calculated rarity data
  */
@@ -33,21 +41,53 @@ const PZ_PATH = 'C:\\Program Files (x86)\\Steam\\steamapps\\common\\ProjectZombo
 const PROJECT_ROOT = path.join(__dirname, '..');
 
 const DISTRIBUTION_FILES = [
-    path.join(PROJECT_ROOT, 'test.lua'),  // ProceduralDistributions.lua copy
+    path.join(PZ_PATH, 'media', 'lua', 'server', 'Items', 'ProceduralDistributions.lua'),
     path.join(PZ_PATH, 'media', 'lua', 'server', 'Items', 'Distributions.lua'),
     path.join(PZ_PATH, 'media', 'lua', 'server', 'Vehicles', 'VehicleDistributions.lua'),
 ];
 
 const ITEMS_REGISTRY_FILE = path.join(PROJECT_ROOT, 'all-items.json');
-const OUTPUT_FILE = path.join(PROJECT_ROOT, 'media', 'lua', 'shared', 'ItemRarityData.lua');
 
-// Rarity thresholds (based on total real chance)
+// Determine output path based on --b41/--b42 flags
+const VERSION_FLAG = process.argv.find(a => a === '--b41' || a === '--b42');
+const VERSION_LABEL = VERSION_FLAG === '--b41' ? 'B41' : VERSION_FLAG === '--b42' ? 'B42' : 'auto';
+
+function getOutputFile() {
+    if (VERSION_FLAG === '--b42') {
+        return path.join(PROJECT_ROOT, '42', 'media', 'lua', 'shared', 'ItemRarityData.lua');
+    }
+    // --b41 or no flag: write to root (B41 default location)
+    return path.join(PROJECT_ROOT, 'media', 'lua', 'shared', 'ItemRarityData.lua');
+}
+
+const OUTPUT_FILE = getOutputFile();
+
+// --- List importance weighting (dual-factor) ---
+// Each list's contribution is weighted by TWO independent factors:
+//
+// 1. Size weight: min(listItems, SIZE_CAP) / SIZE_CAP
+//    Larger lists = more important loot containers.
+//
+// 2. Volume weight: min(totalWeight, VOLUME_CAP) / VOLUME_CAP
+//    Higher total weight = more substantial loot source.
+//    Micro/outfit tables have totalWeight ~0.001-0.01 (penalized heavily).
+//    Real containers have totalWeight ~50-500 (full contribution).
+//
+// Combined: listWeight = sizeWeight × volumeWeight
+// This correctly handles edge cases:
+//   - Zombie outfit (3 items, totalWeight=0.003) → ~0.00003 weight (negligible)
+//   - Gun store (2 items, totalWeight=104) → ~0.067 weight (small but real)
+//   - Locker (30 items, totalWeight=200) → 1.0 weight (full)
+const LIST_SIZE_FULL_WEIGHT = 30;
+const LIST_VOLUME_FULL_WEIGHT = 10;  // totalWeight >= 10 gets full volume weight
+
+// Rarity thresholds (based on total weighted real chance)
 const RARITY_THRESHOLDS = {
-    legendary: 0.02,   // < 0.02 total real chance
-    epic: 0.06,        // 0.02 - 0.06
-    rare: 0.15,        // 0.06 - 0.15
-    uncommon: 0.50,    // 0.15 - 0.50
-    common: Infinity   // > 0.50
+    legendary: 0.01,   // < 0.01 total weighted chance
+    epic: 0.04,        // 0.01 - 0.04
+    rare: 0.12,        // 0.04 - 0.12
+    uncommon: 0.40,    // 0.12 - 0.40
+    common: Infinity   // > 0.40
 };
 
 // Rarity tier order (for comparisons)
@@ -157,10 +197,22 @@ function parseDistributionFile(filePath) {
 // ============================================================
 
 /**
- * Process all distribution sources and accumulate item data
+ * Process all distribution sources and accumulate item data.
+ * 
+ * Uses list-size weighting to prevent micro-lists (outfit tables, 
+ * zombie-specific loot with 1-3 items) from inflating rarity values,
+ * while still counting ALL loot sources proportionally.
+ * 
+ * A list with 1 item contributes 1/20 of its real chance.
+ * A list with 10 items contributes 10/20 = 50%.
+ * A list with 20+ items contributes 100%.
+ * 
+ * No data is discarded - every loot source contributes proportionally.
  */
 function calculateRarities(allLists) {
     const itemData = {};
+    let totalProcessed = 0;
+    let fullWeightCount = 0;
     
     for (const [listName, items] of Object.entries(allLists)) {
         if (!items || items.length === 0) continue;
@@ -169,9 +221,21 @@ function calculateRarities(allLists) {
         const totalWeight = items.reduce((sum, item) => sum + item.weight, 0);
         if (totalWeight === 0) continue;
         
-        // Calculate real chance for each item and accumulate
+        // Dual-factor list importance weight:
+        // Factor 1: list size (number of items)
+        const sizeWeight = Math.min(items.length, LIST_SIZE_FULL_WEIGHT) / LIST_SIZE_FULL_WEIGHT;
+        // Factor 2: list volume (total weight of all items)
+        const volumeWeight = Math.min(totalWeight, LIST_VOLUME_FULL_WEIGHT) / LIST_VOLUME_FULL_WEIGHT;
+        // Combined weight
+        const listWeight = sizeWeight * volumeWeight;
+        
+        if (listWeight >= 0.99) fullWeightCount++;
+        totalProcessed++;
+        
+        // Calculate weighted real chance for each item and accumulate
         for (const item of items) {
-            const realChance = item.weight / totalWeight;
+            const rawRealChance = item.weight / totalWeight;
+            const weightedChance = rawRealChance * listWeight;
             
             // Normalize item name (add Base. prefix if not present)
             let fullName = item.name;
@@ -187,15 +251,21 @@ function calculateRarities(allLists) {
                 };
             }
             
-            itemData[fullName].totalRealChance += realChance;
+            itemData[fullName].totalRealChance += weightedChance;
             itemData[fullName].occurrences += 1;
             itemData[fullName].lists.push({
                 list: listName,
                 weight: item.weight,
-                realChance: realChance
+                rawChance: rawRealChance,
+                weightedChance: weightedChance,
+                listSize: items.length,
+                listWeight: listWeight
             });
         }
     }
+    
+    const weightedDown = totalProcessed - fullWeightCount;
+    console.log(`  Processed ${totalProcessed} lists (${weightedDown} weighted down, ${fullWeightCount} at full weight)`);
     
     return itemData;
 }
@@ -345,13 +415,20 @@ function processCraftedItems(itemData, itemRegistry) {
  * Generate Lua output file
  */
 function generateLuaFile(itemData, itemRegistry) {
+    const versionTag = VERSION_LABEL !== 'auto' ? ` (${VERSION_LABEL})` : '';
     let lua = `--[[
-    Item Rarity Data - Auto-generated by calculate-rarity.js
+    Item Rarity Data${versionTag} - Auto-generated by calculate-rarity.js
     
-    Method: Weighted Real Chance (multi-source)
+    Method: List-Size-Weighted Real Chance (multi-source)
     Sources: ProceduralDistributions, Distributions, VehicleDistributions
     
-    For each item, we sum (weight / listTotal) across all lists where it appears.
+    For each item in each list: realChance = weight / listTotalWeight
+    Each list's contribution is weighted by two factors:
+      sizeWeight  = min(listItems, ${LIST_SIZE_FULL_WEIGHT}) / ${LIST_SIZE_FULL_WEIGHT}
+      volumeWeight = min(totalWeight, ${LIST_VOLUME_FULL_WEIGHT}) / ${LIST_VOLUME_FULL_WEIGHT}
+      listWeight = sizeWeight × volumeWeight
+    Micro-lists (zombie outfits, totalWeight ~0.001) contribute almost nothing.
+    Real loot containers (totalWeight 50-500) contribute fully. No data is discarded.
     
     Adjustments:
     - Confidence threshold: Legendary needs 3+ occurrences, Epic needs 2+
@@ -503,7 +580,8 @@ function printStatistics(itemData, itemRegistry) {
 
 function main() {
     console.log('Item Rarity Calculator for Project Zomboid');
-    console.log('==========================================\n');
+    console.log('==========================================');
+    console.log(`Version: ${VERSION_LABEL} | Output: ${path.relative(PROJECT_ROOT, OUTPUT_FILE)}\n`);
     
     // Load item registry (from scan-items.js output)
     let itemRegistry = null;

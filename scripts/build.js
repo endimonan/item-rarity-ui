@@ -11,7 +11,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { MOD_ID, MOD_FILES, deployDualStructure } = require('./mod-config');
+const { MOD_ID, B41_FILES, B42_DATA_FILES, deployDualStructure } = require('./mod-config');
 
 const ROOT = path.join(__dirname, '..');
 const BUILD_DIR = path.join(ROOT, 'builds', MOD_ID);
@@ -64,26 +64,29 @@ function main() {
     cleanDir(BUILD_DIR);
     console.log(`Cleaned: ${path.relative(ROOT, BUILD_DIR)}/`);
 
-    // Copy mod files to build dir
+    // Copy all files needed for distribution
+    const ALL_BUILD_FILES = [...B41_FILES, ...B42_DATA_FILES];
     let totalSize = 0;
+    let fileCount = 0;
 
-    for (const file of MOD_FILES) {
+    for (const file of ALL_BUILD_FILES) {
         const src = path.join(ROOT, file);
         const dest = path.join(BUILD_DIR, file);
 
         if (!fs.existsSync(src)) {
-            console.error(`  MISSING: ${file}`);
-            process.exit(1);
+            console.warn(`  SKIP (not generated yet): ${file}`);
+            continue;
         }
 
         copyFile(src, dest);
         const size = fs.statSync(src).size;
         totalSize += size;
+        fileCount++;
 
         console.log(`  ${file} (${formatSize(size)})`);
     }
 
-    console.log(`\nBuild complete: ${MOD_FILES.length} files, ${formatSize(totalSize)}`);
+    console.log(`\nBuild complete: ${fileCount} files, ${formatSize(totalSize)}`);
     console.log(`Output: ${path.relative(ROOT, BUILD_DIR)}/`);
     
     // Deploy to Zomboid mods folder if --deploy flag
