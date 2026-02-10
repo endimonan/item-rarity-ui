@@ -517,6 +517,72 @@ function ItemRarityUI.getEffectiveColumnWidth(typeColWidth)
 end
 
 --***********************************************************
+--** Mod compatibility detection
+--***********************************************************
+
+-- Known UI mods that may conflict with the rarity column
+ItemRarityUI.knownConflicts = {
+    {
+        name = "CleanUI",
+        patterns = { "CleanUI" },
+        workshopIds = {
+            ["3437629766"] = "[B42] CleanUI V2.2",
+            ["3575895484"] = "[B42] CleanUI Hotfix",
+        },
+    },
+}
+
+-- Detect conflicting/compatible UI mods by name or Steam Workshop ID
+-- Note: PZ's Java-to-Lua string conversion adds a hidden trailing byte,
+-- so we use Lua string.find() instead of Java's ArrayList:contains()
+function ItemRarityUI.detectConflictingMods()
+    local activeMods = getActivatedMods and getActivatedMods()
+    if not activeMods then return end
+
+    for i = 0, activeMods:size() - 1 do
+        local rawId = tostring(activeMods:get(i))
+        local modId = rawId:match("^%s*(.-)%s*$") or rawId
+
+        for _, conflict in ipairs(ItemRarityUI.knownConflicts) do
+            local detected = false
+            local detectedBy = nil
+
+            -- 1) Check by mod name pattern
+            for _, pattern in ipairs(conflict.patterns) do
+                if modId:find(pattern, 1, true) then
+                    detected = true
+                    detectedBy = "mod ID: " .. modId
+                    break
+                end
+            end
+
+            -- 2) Check by Steam Workshop ID if available
+            if not detected then
+                pcall(function()
+                    local info = getModInfoByID(rawId)
+                    if info and info.getWorkshopID then
+                        local wsId = tostring(info:getWorkshopID())
+                        if conflict.workshopIds[wsId] then
+                            detected = true
+                            detectedBy = "Workshop ID: " .. wsId .. " (" .. conflict.workshopIds[wsId] .. ")"
+                        end
+                    end
+                end)
+            end
+
+            if detected then
+                print("[ItemRarityUI] " .. conflict.name .. " detected [" .. detectedBy .. "]")
+                if conflict.name == "CleanUI" then
+                    ItemRarityUI.cleanUIDetected = true
+                    ItemRarityUI.showRarityColumn = false
+                    print("[ItemRarityUI] Rarity column disabled (CleanUI compatibility) - colors remain active")
+                end
+            end
+        end
+    end
+end
+
+--***********************************************************
 --** Hook createChildren to add Rarity column header
 --***********************************************************
 
@@ -526,6 +592,12 @@ local original_createChildren = ISInventoryPane.createChildren
 
 function ISInventoryPane:createChildren()
     original_createChildren(self)
+
+    -- Run mod conflict detection once (getActivatedMods is available at this point)
+    if not ItemRarityUI._conflictsChecked then
+        ItemRarityUI._conflictsChecked = true
+        ItemRarityUI.detectConflictingMods()
+    end
     
     -- Add Rarity column button after the existing columns (using ISResizableButton for resize support)
     -- Wrapped in pcall for B42 compatibility
