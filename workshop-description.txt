@@ -1,0 +1,51 @@
+Please, Like this mod if you enjoyed it, suggestions are welcome.
+
+I develop these projects because I love them, but it also costs money and time
+
+[h1]=>>> Support my work: https://ko-fi.com/endimonan[/h1]
+[b]Thanks!![/b]
+
+[hr][/hr]
+[h1]What does this mod do?[/h1]
+Adds colored item names and a rarity column to your inventory, based on actual spawn chances from the game's loot tables.
+
+Ever looted a house and wondered how lucky you actually got? This mod calculates the real drop weight of every item across all procedural distributions and assigns a rarity tier - right there in your inventory.
+
+[h1]How it works[/h1]
+Rarity is based on how often an item actually shows up across all loot sources. The lower the weighted spawn chance, the rarer it is. Simple as that.
+[list]
+[*][b]Legendary[/b] (orange) - The stuff you almost never find.
+[*][b]Epic[/b] (purple) - Rare items worth celebrating.
+[*][b]Rare[/b] (blue) - Solid finds. Worth holding onto.
+[*][b]Uncommon[/b] (green) - Shows up sometimes, nothing crazy.
+[*][b]Common[/b] (gray) - You'll trip over these in every kitchen and bathroom.
+[*][b]Crafted[/b] (cyan) - Items only obtainable through crafting.
+[/list]
+Items that don't appear in any loot table show as Unknown.
+
+[h1]Features[/h1]
+[list]
+[*]Colored item names by rarity (RPG-style)
+[*]Dedicated "Rarity" column in the inventory panel
+[*]Click the column header to sort items by rarity
+[*]Resizable column - drag to adjust like other columns
+[*]Dynamic width for different screen resolutions (Steam Deck friendly)
+[*]Separate rarity data for B41 and B42 loot tables
+[*]Safe to add to existing saves - no new game required
+[/list]
+
+[h1]Translations[/h1]
+Fully translated into 20 languages:
+English, Portuguese (BR/PT), Spanish, French, German, Italian, Russian, Polish, Japanese, Korean, Chinese (Simplified & Traditional), Thai, Turkish, Dutch, Czech, Hungarian, Arabic, Finnish, Ukrainian.
+If your language is missing or a translation feels off, let me know.
+
+[h1]Compatibility[/h1]
+[list]
+[*]Build 41 and Build 42 (42.13.1)
+[*]Safe to add to existing saves
+[*]Client-side only - works on servers without needing server-side installation
+[*]CleanUI V2.3 - rarity column is auto-disabled, colored names remain active, and a "Rarity" sort option is added to CleanUI's sort menu
+[/list]
+
+Workshop ID: 3662387304
+Mod ID: ItemRarityUI

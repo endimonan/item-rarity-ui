@@ -80,9 +80,10 @@ ItemRarityUI.rarityTiers = {
     }
 }
 
--- Translations for rarity names
+-- Translations for rarity names (top 20 PZ languages)
+-- Latin-alphabet languages use ASCII only (no diacritics) for compatibility
 ItemRarityUI.translations = {
-    -- English (default)
+    -- 1. English (default)
     EN = {
         Legendary = "Legendary",
         Epic = "Epic",
@@ -93,7 +94,7 @@ ItemRarityUI.translations = {
         Unknown = "Unknown",
         Rarity = "Rarity"
     },
-    -- Portuguese (sem acentos para compatibilidade)
+    -- 2. Portuguese (BR)
     PTBR = {
         Legendary = "Lendario",
         Epic = "Epico",
@@ -104,50 +105,40 @@ ItemRarityUI.translations = {
         Unknown = "Desconhecido",
         Rarity = "Raridade"
     },
-    PT = {
-        Legendary = "Lendario",
-        Epic = "Epico",
-        Rare = "Raro",
-        Uncommon = "Incomum",
-        Common = "Comum",
-        Crafted = "Fabricado",
-        Unknown = "Desconhecido",
-        Rarity = "Raridade"
-    },
-    -- Spanish
+    -- 3. Spanish
     ES = {
         Legendary = "Legendario",
-        Epic = "Épico",
+        Epic = "Epico",
         Rare = "Raro",
-        Uncommon = "Poco común",
-        Common = "Común",
+        Uncommon = "Poco comun",
+        Common = "Comun",
         Crafted = "Fabricado",
         Unknown = "Desconocido",
         Rarity = "Rareza"
     },
-    -- French
+    -- 4. French
     FR = {
-        Legendary = "Légendaire",
-        Epic = "Épique",
+        Legendary = "Legendaire",
+        Epic = "Epique",
         Rare = "Rare",
         Uncommon = "Peu commun",
         Common = "Commun",
-        Crafted = "Fabriqué",
+        Crafted = "Fabrique",
         Unknown = "Inconnu",
-        Rarity = "Rareté"
+        Rarity = "Rarete"
     },
-    -- German
+    -- 5. German
     DE = {
-        Legendary = "Legendär",
+        Legendary = "Legendar",
         Epic = "Episch",
         Rare = "Selten",
-        Uncommon = "Ungewöhnlich",
-        Common = "Gewöhnlich",
+        Uncommon = "Ungewohnlich",
+        Common = "Gewohnlich",
         Crafted = "Hergestellt",
         Unknown = "Unbekannt",
         Rarity = "Seltenheit"
     },
-    -- Italian
+    -- 6. Italian
     IT = {
         Legendary = "Leggendario",
         Epic = "Epico",
@@ -156,9 +147,9 @@ ItemRarityUI.translations = {
         Common = "Comune",
         Crafted = "Fabbricato",
         Unknown = "Sconosciuto",
-        Rarity = "Rarità"
+        Rarity = "Rarita"
     },
-    -- Russian
+    -- 7. Russian
     RU = {
         Legendary = "Легендарный",
         Epic = "Эпический",
@@ -169,7 +160,7 @@ ItemRarityUI.translations = {
         Unknown = "Неизвестно",
         Rarity = "Редкость"
     },
-    -- Polish
+    -- 8. Polish
     PL = {
         Legendary = "Legendarny",
         Epic = "Epicki",
@@ -178,9 +169,9 @@ ItemRarityUI.translations = {
         Common = "Pospolity",
         Crafted = "Wytworzony",
         Unknown = "Nieznany",
-        Rarity = "Rzadkość"
+        Rarity = "Rzadkosc"
     },
-    -- Japanese
+    -- 9. Japanese
     JP = {
         Legendary = "伝説",
         Epic = "エピック",
@@ -191,7 +182,7 @@ ItemRarityUI.translations = {
         Unknown = "不明",
         Rarity = "レアリティ"
     },
-    -- Korean
+    -- 10. Korean
     KO = {
         Legendary = "전설",
         Epic = "에픽",
@@ -202,7 +193,7 @@ ItemRarityUI.translations = {
         Unknown = "미확인",
         Rarity = "희귀도"
     },
-    -- Chinese Simplified
+    -- 11. Chinese Simplified
     CH = {
         Legendary = "传说",
         Epic = "史诗",
@@ -213,17 +204,7 @@ ItemRarityUI.translations = {
         Unknown = "未知",
         Rarity = "稀有度"
     },
-    CN = {
-        Legendary = "传说",
-        Epic = "史诗",
-        Rare = "稀有",
-        Uncommon = "精良",
-        Common = "普通",
-        Crafted = "制作",
-        Unknown = "未知",
-        Rarity = "稀有度"
-    },
-    -- Chinese Traditional
+    -- 12. Chinese Traditional
     TW = {
         Legendary = "傳說",
         Epic = "史詩",
@@ -234,7 +215,7 @@ ItemRarityUI.translations = {
         Unknown = "未知",
         Rarity = "稀有度"
     },
-    -- Thai
+    -- 13. Thai
     TH = {
         Legendary = "ตำนาน",
         Epic = "มหากาพย์",
@@ -245,18 +226,18 @@ ItemRarityUI.translations = {
         Unknown = "ไม่ทราบ",
         Rarity = "ความหายาก"
     },
-    -- Turkish
+    -- 14. Turkish
     TR = {
         Legendary = "Efsanevi",
-        Epic = "Destansı",
+        Epic = "Destansi",
         Rare = "Nadir",
-        Uncommon = "Sıradışı",
-        Common = "Yaygın",
-        Crafted = "El Yapımı",
+        Uncommon = "Siradisi",
+        Common = "Yaygin",
+        Crafted = "El Yapimi",
         Unknown = "Bilinmeyen",
         Rarity = "Nadirlik"
     },
-    -- Dutch
+    -- 15. Dutch
     NL = {
         Legendary = "Legendarisch",
         Epic = "Episch",
@@ -267,29 +248,29 @@ ItemRarityUI.translations = {
         Unknown = "Onbekend",
         Rarity = "Zeldzaamheid"
     },
-    -- Czech
+    -- 16. Czech
     CS = {
-        Legendary = "Legendární",
-        Epic = "Epický",
-        Rare = "Vzácný",
-        Uncommon = "Neobvyklý",
-        Common = "Běžný",
-        Crafted = "Vyrobený",
-        Unknown = "Neznámý",
-        Rarity = "Vzácnost"
+        Legendary = "Legendarni",
+        Epic = "Epicky",
+        Rare = "Vzacny",
+        Uncommon = "Neobvykly",
+        Common = "Bezny",
+        Crafted = "Vyrobeny",
+        Unknown = "Neznamy",
+        Rarity = "Vzacnost"
     },
-    -- Hungarian
+    -- 17. Hungarian
     HU = {
-        Legendary = "Legendás",
+        Legendary = "Legendas",
         Epic = "Epikus",
         Rare = "Ritka",
         Uncommon = "Szokatlan",
-        Common = "Közönséges",
-        Crafted = "Készített",
+        Common = "Kozoenseges",
+        Crafted = "Keszitett",
         Unknown = "Ismeretlen",
-        Rarity = "Ritkaság"
+        Rarity = "Ritkasag"
     },
-    -- Arabic
+    -- 18. Arabic
     AR = {
         Legendary = "أسطوري",
         Epic = "ملحمي",
@@ -300,51 +281,18 @@ ItemRarityUI.translations = {
         Unknown = "مجهول",
         Rarity = "الندرة"
     },
-    -- Norwegian
-    NO = {
-        Legendary = "Legendarisk",
-        Epic = "Episk",
-        Rare = "Sjelden",
-        Uncommon = "Uvanlig",
-        Common = "Vanlig",
-        Crafted = "Laget",
-        Unknown = "Ukjent",
-        Rarity = "Sjeldenhet"
-    },
-    -- Danish
-    DA = {
-        Legendary = "Legendarisk",
-        Epic = "Episk",
-        Rare = "Sjælden",
-        Uncommon = "Usædvanlig",
-        Common = "Almindelig",
-        Crafted = "Fremstillet",
-        Unknown = "Ukendt",
-        Rarity = "Sjældenhed"
-    },
-    -- Finnish
+    -- 19. Finnish
     FI = {
         Legendary = "Legendaarinen",
         Epic = "Eeppinen",
         Rare = "Harvinainen",
-        Uncommon = "Epätavallinen",
+        Uncommon = "Epatavallinen",
         Common = "Tavallinen",
         Crafted = "Valmistettu",
         Unknown = "Tuntematon",
         Rarity = "Harvinaisuus"
     },
-    -- Swedish
-    SV = {
-        Legendary = "Legendarisk",
-        Epic = "Episk",
-        Rare = "Sällsynt",
-        Uncommon = "Ovanlig",
-        Common = "Vanlig",
-        Crafted = "Tillverkad",
-        Unknown = "Okänd",
-        Rarity = "Sällsynthet"
-    },
-    -- Ukrainian
+    -- 20. Ukrainian
     UA = {
         Legendary = "Легендарний",
         Epic = "Епічний",
@@ -357,46 +305,44 @@ ItemRarityUI.translations = {
     }
 }
 
--- Get current language
+-- Aliases for language codes that PZ may return
+ItemRarityUI.translations.PT = ItemRarityUI.translations.PTBR
+ItemRarityUI.translations.CN = ItemRarityUI.translations.CH
+
+-- Language aliases: maps PZ language names/codes to our translation keys
+ItemRarityUI.languageAliases = {
+    ["PT-BR"] = "PTBR", ["Portugues"] = "PTBR", ["Portuguese"] = "PTBR",
+    ["Espanol"] = "ES",  ["Spanish"] = "ES",
+    ["Francais"] = "FR", ["French"] = "FR",
+    ["Deutsch"] = "DE",  ["German"] = "DE",
+    ["Russian"] = "RU",
+}
+
+-- Get current language key for translations
 function ItemRarityUI.getLanguage()
     local lang = nil
-    -- Safely get language - getLanguage() returns a Language object, need to call :name()
     if Translator and Translator.getLanguage then
         local langObj = Translator.getLanguage()
         if langObj and langObj.name then
             lang = langObj:name()
         end
     end
-    -- Ensure we have a valid string
     if type(lang) ~= "string" or lang == "" then
         return "EN"
     end
-    
-    -- Convert to uppercase for matching
-    local langUpper = string.upper(lang)
-    
-    -- Handle Portuguese variations
-    if langUpper == "PT-BR" or langUpper == "PTBR" or langUpper == "PT" or lang == "Portugues" or lang == "Portuguese" then
-        return "PTBR"
+
+    -- Check alias table first (handles full names and special codes)
+    local alias = ItemRarityUI.languageAliases[lang]
+    if alias then return alias end
+
+    -- Try uppercase code directly (covers EN, ES, FR, DE, RU, JP, KO, etc.)
+    local upper = string.upper(lang)
+    if ItemRarityUI.translations[upper] then
+        return upper
     end
-    -- Handle Spanish variations
-    if langUpper == "ES" or lang == "Espanol" or lang == "Spanish" then
-        return "ES"
-    end
-    -- Handle French variations
-    if langUpper == "FR" or lang == "Francais" or lang == "French" then
-        return "FR"
-    end
-    -- Handle German variations
-    if langUpper == "DE" or lang == "Deutsch" or lang == "German" then
-        return "DE"
-    end
-    -- Handle Russian variations
-    if langUpper == "RU" or lang == "Russian" then
-        return "RU"
-    end
-    -- Handle other languages by uppercase code
-    return langUpper
+
+    -- Fallback
+    return "EN"
 end
 
 -- Get translated text
@@ -576,17 +522,75 @@ function ItemRarityUI.detectConflictingMods()
                     ItemRarityUI.cleanUIDetected = true
                     ItemRarityUI.showRarityColumn = false
                     print("[ItemRarityUI] Rarity column disabled (CleanUI compatibility) - colors remain active")
+                    ItemRarityUI.patchCleanUISortMenu()
                 end
             end
         end
     end
 end
 
+-- Patch CleanUI's sort menu to add a Rarity sort option
+-- Only called when CleanUI is detected; monkey-patches ISInventoryCommonHandler_SortMenu:perform()
+function ItemRarityUI.patchCleanUISortMenu()
+    if not ISInventoryCommonHandler_SortMenu then return end
+
+    local originalPerform = ISInventoryCommonHandler_SortMenu.perform
+    if not originalPerform then return end
+
+    ISInventoryCommonHandler_SortMenu.perform = function(self)
+        -- Temporarily intercept ISContextMenu.get to capture the menu reference
+        -- (calling ISContextMenu.get a second time creates a NEW menu, losing the original options)
+        local capturedContext = nil
+        local origGet = ISContextMenu.get
+        ISContextMenu.get = function(...)
+            capturedContext = origGet(...)
+            return capturedContext
+        end
+
+        -- Call CleanUI's original perform (creates menu with Name/Category/Weight)
+        originalPerform(self)
+
+        -- Always restore the original ISContextMenu.get
+        ISContextMenu.get = origGet
+
+        -- Add Rarity option to the same menu that CleanUI created
+        if capturedContext then
+            local ok, err = pcall(function()
+                local rarityOption = capturedContext:addOption(
+                    ItemRarityUI.getText("Rarity"),
+                    self,
+                    function(handler)
+                        local window = handler:getWindow()
+                        if not window or not window.inventoryPane then return end
+                        local pane = window.inventoryPane
+                        if pane.itemSortFunc == ISInventoryPane.itemSortByRarityInc then
+                            pane.itemSortFunc = ISInventoryPane.itemSortByRarityDesc
+                        else
+                            pane.itemSortFunc = ISInventoryPane.itemSortByRarityInc
+                        end
+                        pane:refreshContainer()
+                    end
+                )
+                -- Use our own icon (matches CleanUI's visual style)
+                local rarityIcon = getTexture("media/ui/ItemRarityUI/Icon_Rarity.png")
+                if rarityIcon and rarityOption then
+                    rarityOption.iconTexture = rarityIcon
+                end
+            end)
+            if not ok then
+                print("[ItemRarityUI] WARNING: CleanUI sort patch failed: " .. tostring(err))
+            end
+        end
+    end
+
+    print("[ItemRarityUI] CleanUI sort menu patched - Rarity option added")
+end
+
 --***********************************************************
 --** Hook createChildren to add Rarity column header
 --***********************************************************
 
-require "ISUI/ISResizableButton"
+pcall(require, "ISUI/ISResizableButton")
 
 local original_createChildren = ISInventoryPane.createChildren
 
@@ -785,8 +789,8 @@ function ISInventoryPane:renderdetails(doDragged)
     -- Restore original drawText
     self.drawText = origDrawText
     
-    -- Now draw rarity column text
-    if ItemRarityUI.showRarityColumn and self.itemslist and not doDragged then
+    -- Now draw rarity column text (only if columns exist)
+    if ItemRarityUI.showRarityColumn and self.itemslist and not doDragged and self.column3 and self.column4 then
         local y = 0
         local headerHgt = self.headerHgt or 16
         local itemHgt = self.itemHgt or 18

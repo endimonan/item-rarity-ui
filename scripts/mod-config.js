@@ -31,9 +31,10 @@ const META_FILES = [
     'modicon.png',
 ];
 
-// Shared code files (same for B41 and B42)
+// Shared code and asset files (same for B41 and B42)
 const SHARED_CODE_FILES = [
     'media/lua/client/ItemRarityUI.lua',
+    'media/ui/ItemRarityUI/Icon_Rarity.png',
 ];
 
 // Version-specific data files
