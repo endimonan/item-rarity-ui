@@ -11,7 +11,7 @@ Compatible with **Build 41** and **Build 42**.
 - **Resizable column** - drag to resize like other columns
 - **Responsive** - dynamic column width for different screen resolutions (Steam Deck compatible)
 - **Crafted items** - items only obtainable via crafting get a special "Crafted" label
-- **Multi-language support** - 22+ languages supported
+- **Multi-language support** - 20 languages supported
 - **B41 + B42 dual data** - separate rarity lists for each game version
 - **Works with existing saves** - no need to start a new game
 
@@ -292,8 +292,10 @@ You can customize the mod by editing `media/lua/client/ItemRarityUI.lua`:
 
 - **Build 41** and **Build 42** compatible (dual folder structure)
 - Works with existing saves
+- Client-side only - works on servers without server-side installation
 - Dynamic column width for different screen resolutions (Steam Deck)
 - `pcall` wrappers for safe B42 API compatibility
+- **CleanUI V2.3** - auto-disables rarity column, keeps colored names, adds "Rarity" sort option to CleanUI's sort menu
 
 ## License
 
