@@ -26,15 +26,269 @@ ItemRarityUI.colorItemNames = true
 ItemRarityUI.showRarityColumn = true
 ItemRarityUI.dataLoaded = false
 
--- Rarity overrides for special items (player starting items, etc.)
+-- Rarity overrides for special items
 -- These items will be forced to a specific rarity regardless of calculated value
+-- Organized by category for maintainability
 ItemRarityUI.rarityOverrides = {
-    ["Base.KeyRing"] = "common",  -- Personal keyring (every character has one)
-    ["Base.Key1"] = "common",     -- Keys that spawn with vehicles/doors
+
+    ----------------------------------------------------------------
+    -- COMMON: Player starting items (every character has these)
+    ----------------------------------------------------------------
+    ["Base.KeyRing"] = "common",
+    ["Base.Key1"] = "common",
     ["Base.Key2"] = "common",
     ["Base.Key3"] = "common",
     ["Base.Key4"] = "common",
     ["Base.Key5"] = "common",
+
+    ----------------------------------------------------------------
+    -- LEGENDARY: Most valuable/iconic items promoted from rare/epic
+    ----------------------------------------------------------------
+    ["Base.Generator"] = "legendary",         -- most valuable item in PZ, enables electricity
+    ["Base.Chainsaw"] = "legendary",          -- extremely powerful tool, iconic
+    ["Base.AssaultRifle"] = "legendary",      -- M16, rarest and most powerful vanilla firearm
+    ["Base.Hat_NBCmask"] = "legendary",       -- NBC gas mask, extremely rare and valuable
+    ["Base.HazmatSuit"] = "legendary",        -- only full contamination protection, critical in B42
+
+    ----------------------------------------------------------------
+    -- EPIC: Military/tactical gear and unique items promoted from rare
+    ----------------------------------------------------------------
+    ["Base.Ghillie_Top"] = "epic",            -- ghillie suit top, military camo
+    ["Base.Ghillie_Trousers"] = "epic",       -- ghillie suit bottom
+    ["Base.Jacket_Padded"] = "epic",          -- padded jacket, extremely rare
+    ["Base.Vest_BulletPolice"] = "epic",      -- police bulletproof vest
+    ["Base.Bag_ALICEpack"] = "epic",          -- military ALICE backpack
+    ["Base.Bayonnet"] = "epic",               -- military bayonet
+    ["Base.WeddingDress"] = "epic",           -- unique outfit, collector item
+    ["Base.Mov_Projector"] = "epic",          -- very rare item
+
+    -- Weapon cases: epic fits better than legendary
+    ["Base.PistolCase2"] = "epic",
+    ["Base.PistolCase3"] = "epic",
+    ["Base.RevolverCase1"] = "epic",
+    ["Base.RevolverCase2"] = "epic",
+    ["Base.RevolverCase3"] = "epic",
+
+    -- Level 5 skill books that math placed in rare (all other lv5 books are epic)
+    ["Base.BookMechanic5"] = "epic",          -- master mechanics book
+    ["Base.BookFarming5"] = "epic",           -- master farming book
+
+    -- Themed leather jackets: chance 0.004, excluded by occurrence filter
+    ["Base.Jacket_LeatherBarrelDogs"] = "epic",
+    ["Base.Jacket_LeatherIronRodent"] = "epic",
+    ["Base.Jacket_LeatherWildRacoons"] = "epic",
+
+    -- High-value rare items promoted by gameplay perception
+    ["Base.MortarPestle"] = "epic",           -- essential herbalism tool, chance 0.002
+    ["Base.x8Scope"] = "epic",               -- best weapon scope in the game
+    ["Base.CarBatteryCharger"] = "epic",      -- essential late-game vehicle tool
+    ["Base.223Bullets"] = "epic",             -- rare rifle ammo (matches legendary AssaultRifle)
+    ["Base.308Bullets"] = "epic",             -- rare rifle ammo
+    ["Base.Hat_HockeyMask"] = "epic",         -- iconic collectible (Jason mask)
+
+    ----------------------------------------------------------------
+    -- RARE: Demoted from epic (clothing that math put in epic)
+    ----------------------------------------------------------------
+    -- Umbrellas: not epic-worthy
+    ["Base.ClosedUmbrellaBlack"] = "rare",
+    ["Base.ClosedUmbrellaBlue"] = "rare",
+    ["Base.ClosedUmbrellaRed"] = "rare",
+    ["Base.ClosedUmbrellaWhite"] = "rare",
+
+    -- Neckties
+    ["Base.Tie_BowTieFull"] = "rare",
+    ["Base.Tie_BowTieWorn"] = "rare",
+    ["Base.Tie_Full"] = "rare",
+    ["Base.Tie_Worn"] = "rare",
+
+    -- Bowling shirts
+    ["Base.Shirt_Bowling_Blue"] = "rare",
+    ["Base.Shirt_Bowling_Brown"] = "rare",
+    ["Base.Shirt_Bowling_Green"] = "rare",
+    ["Base.Shirt_Bowling_LimeGreen"] = "rare",
+    ["Base.Shirt_Bowling_Pink"] = "rare",
+    ["Base.Shirt_Bowling_White"] = "rare",
+
+    -- Misc clothing demoted from epic
+    ["Base.Corset_Medical"] = "rare",
+    ["Base.Dress_long_Straps"] = "rare",
+    ["Base.Shorts_ShortDenim"] = "rare",
+
+    -- Underwear should not be epic
+    ["Base.Boxers_Silk_Black"] = "rare",
+    ["Base.Boxers_Silk_Red"] = "rare",
+    ["Base.Briefs_SmallTrunks_Black"] = "rare",
+    ["Base.Briefs_SmallTrunks_Blue"] = "rare",
+    ["Base.Briefs_SmallTrunks_Red"] = "rare",
+    ["Base.Briefs_SmallTrunks_WhiteTINT"] = "rare",
+
+    -- Misc items demoted from epic
+    ["Base.Lollipop"] = "rare",
+    ["Base.PetrolCan"] = "rare",
+    ["Base.BoxOfJars"] = "rare",
+    ["Base.Hat_EarMuffs"] = "rare",
+    ["Base.ModernCarMuffler3"] = "rare",
+    ["Base.Mov_SatelliteDish"] = "rare",
+    ["Base.Mov_DegreeDoctor"] = "rare",
+    ["Base.Mov_DegreeSurgeon"] = "rare",
+    ["Base.LetterOpener"] = "rare",
+    ["Radio.CDPlayer"] = "rare",
+    ["Base.BookTailoring4"] = "rare",         -- level 4 book: rare (level 5 stays epic)
+
+    -- Colored light bulbs: decorative/utility, not legendary
+    ["Base.LightBulbPink"] = "rare",
+    ["Base.LightBulbPurple"] = "rare",
+    ["Base.LightBulbOrange"] = "rare",
+    ["Base.LightBulbBlue"] = "rare",
+    ["Base.LightBulbMagenta"] = "rare",
+    ["Base.LightBulbCyan"] = "rare",
+    ["Base.LightBulbYellow"] = "rare",
+
+    -- Clothing: low spawn but not legendary-worthy
+    ["Base.Skirt_Short"] = "rare",
+    ["Base.LongCoat_Bathrobe"] = "rare",
+    ["Base.Hat_HardHat_Miner"] = "rare",
+
+    -- Food/containers: not legendary
+    ["Base.PizzaWhole"] = "rare",
+    ["Base.Lunchbox2"] = "rare",
+
+    -- GunLight: chance 0, occurrences 0
+    ["Base.GunLight"] = "rare",
+
+    ----------------------------------------------------------------
+    -- UNCOMMON: Demoted from rare (mundane items math classified as rare)
+    ----------------------------------------------------------------
+
+    -- Furniture / Moveables: chairs, tables, sinks, etc.
+    ["Base.Mov_BluePlasticChair"] = "uncommon",
+    ["Base.Mov_BrownLowTable"] = "uncommon",
+    ["Base.Mov_ChromeSink"] = "uncommon",
+    ["Base.Mov_DarkBlueChair"] = "uncommon",
+    ["Base.Mov_DarkWoodenChair"] = "uncommon",
+    ["Base.Mov_FancyBlackChair"] = "uncommon",
+    ["Base.Mov_FancyDarkTable"] = "uncommon",
+    ["Base.Mov_FancyLowTable"] = "uncommon",
+    ["Base.Mov_FancyToilet"] = "uncommon",
+    ["Base.Mov_FancyWhiteChair"] = "uncommon",
+    ["Base.Mov_FoldingChair"] = "uncommon",
+    ["Base.Mov_GreenChair"] = "uncommon",
+    ["Base.Mov_GreyChair"] = "uncommon",
+    ["Base.Mov_IndustrialSink"] = "uncommon",
+    ["Base.Mov_LongTable"] = "uncommon",
+    ["Base.Mov_MannequinFemale"] = "uncommon",
+    ["Base.Mov_MapUSA"] = "uncommon",
+    ["Base.Mov_MetalLocker"] = "uncommon",
+    ["Base.Mov_OfficeChair"] = "uncommon",
+    ["Base.Mov_PlasticChair"] = "uncommon",
+    ["Base.Mov_PlasticLowTable"] = "uncommon",
+    ["Base.Mov_PurpleWoodenChair"] = "uncommon",
+    ["Base.Mov_RedChair"] = "uncommon",
+    ["Base.Mov_RedWoodenChair"] = "uncommon",
+    ["Base.Mov_SmallTable"] = "uncommon",
+    ["Base.Mov_WhiteSimpleChair"] = "uncommon",
+    ["Base.Mov_WhiteSink"] = "uncommon",
+    ["Base.Mov_WhiteWoodenChair"] = "uncommon",
+    ["Base.Mov_WoodenChair"] = "uncommon",
+    ["Base.Mov_WoodenStool"] = "uncommon",
+
+    -- Other moveables: lamps, posters, signs, misc
+    ["Base.Mov_Lamp1"] = "uncommon",
+    ["Base.Mov_Lamp2"] = "uncommon",
+    ["Base.Mov_Lamp3"] = "uncommon",
+    ["Base.Mov_Lamp4"] = "uncommon",
+    ["Base.Mov_Lamp5"] = "uncommon",
+    ["Base.Mov_Lamp6"] = "uncommon",
+    ["Base.Mov_PaintingElisa"] = "uncommon",
+    ["Base.Mov_PosterDroids"] = "uncommon",
+    ["Base.Mov_PosterElement"] = "uncommon",
+    ["Base.Mov_PosterOmega"] = "uncommon",
+    ["Base.Mov_PosterPaws"] = "uncommon",
+    ["Base.Mov_SignArmy"] = "uncommon",
+    ["Base.Mov_SignRestricted"] = "uncommon",
+    ["Base.Mov_SignWarning"] = "uncommon",
+    ["Base.Mov_PalletEmpty"] = "uncommon",
+    ["Base.Mov_Microphone"] = "uncommon",
+    ["Base.Mov_DesktopComputer"] = "uncommon",
+    ["Base.Mov_Microwave"] = "uncommon",
+    ["Base.Mov_Microwave2"] = "uncommon",
+    ["Base.Mov_RoadCone"] = "uncommon",
+    ["Base.Mov_RoadCone2"] = "uncommon",
+    ["Base.Mov_RoadBarrier"] = "uncommon",
+    ["Base.Mov_LightConstruction"] = "uncommon",
+    ["Base.Mov_TVCamera"] = "uncommon",
+
+    -- Paint cans
+    ["Base.PaintBlack"] = "uncommon",
+    ["Base.PaintBlue"] = "uncommon",
+    ["Base.PaintBrown"] = "uncommon",
+    ["Base.PaintCyan"] = "uncommon",
+    ["Base.PaintGreen"] = "uncommon",
+    ["Base.PaintGrey"] = "uncommon",
+    ["Base.PaintLightBlue"] = "uncommon",
+    ["Base.PaintLightBrown"] = "uncommon",
+    ["Base.PaintOrange"] = "uncommon",
+    ["Base.PaintPink"] = "uncommon",
+    ["Base.PaintPurple"] = "uncommon",
+    ["Base.PaintRed"] = "uncommon",
+    ["Base.PaintTurquoise"] = "uncommon",
+    ["Base.PaintWhite"] = "uncommon",
+    ["Base.PaintYellow"] = "uncommon",
+
+    -- Dead animals
+    ["Base.DeadRat"] = "uncommon",
+    ["Base.DeadMouse"] = "uncommon",
+    ["Base.DeadBird"] = "uncommon",
+    ["Base.DeadRabbit"] = "uncommon",
+    ["Base.DeadSquirrel"] = "uncommon",
+
+    -- Food/cooking intermediates
+    ["Base.BreadDough"] = "uncommon",
+    ["Base.CakeBatter"] = "uncommon",
+    ["Base.Icing"] = "uncommon",
+    ["Base.PieDough"] = "uncommon",
+    ["Base.TVDinner"] = "uncommon",
+    ["Base.Tortilla"] = "uncommon",
+    ["Base.FishRoe"] = "uncommon",
+
+    -- Basic materials/crafting
+    ["Base.WoodenStick"] = "uncommon",
+    ["Base.DenimStrips"] = "uncommon",
+    ["Base.SheetRope"] = "uncommon",
+    ["Base.BandageDirty"] = "uncommon",
+    ["Base.SmashedBottle"] = "uncommon",
+
+    -- Snacks/candies
+    ["Base.ChocoCakes"] = "uncommon",
+    ["Base.HiHis"] = "uncommon",
+    ["Base.Plonkies"] = "uncommon",
+    ["Base.QuaggaCakes"] = "uncommon",
+    ["Base.SnoGlobes"] = "uncommon",
+    ["Base.ChocolateCoveredCoffeeBeans"] = "uncommon",
+    ["Base.HardCandies"] = "uncommon",
+    ["Base.MintCandy"] = "uncommon",
+    ["Base.Modjeska"] = "uncommon",
+    ["Base.Peppermint"] = "uncommon",
+    ["Base.RockCandy"] = "uncommon",
+    ["Base.CandyFruitSlices"] = "uncommon",
+    ["Base.Coldpack"] = "uncommon",
+
+    -- Misc mundane items
+    ["Base.GroceryBag2"] = "uncommon",
+    ["Base.GroceryBag3"] = "uncommon",
+    ["Base.GroceryBag4"] = "uncommon",
+    ["Base.GroceryBag5"] = "uncommon",
+    ["Base.CompostBag"] = "uncommon",
+    ["Base.Lightbulb"] = "uncommon",
+    ["Base.TinOpener"] = "uncommon",
+    ["Base.Broom"] = "uncommon",
+    ["Base.Mop"] = "uncommon",
+
+    -- 0-chance mundane items that should not be rare
+    ["Base.TableLeg"] = "uncommon",
+    ["Base.Football2"] = "uncommon",
+    ["Base.FertilizerEmpty"] = "uncommon",
+    ["Base.Pipe"] = "uncommon",
 }
 
 -- Rarity tiers configuration (based on Weighted Real Chance)
@@ -604,9 +858,10 @@ function ISInventoryPane:createChildren()
     end
     
     -- Add Rarity column button after the existing columns (using ISResizableButton for resize support)
+    -- Always created (unless CleanUI); visibility is toggled in prerender via ModOptions
     -- Wrapped in pcall for B42 compatibility
     local ok, err = pcall(function()
-        if ItemRarityUI.showRarityColumn and ISResizableButton then
+        if not ItemRarityUI.cleanUIDetected and ISResizableButton then
             local btnWid = ItemRarityUI.rarityColumnWidth
             local btnHgt = self.headerHgt or 16
             
@@ -630,7 +885,6 @@ function ISInventoryPane:createChildren()
     if not ok then
         print("[ItemRarityUI] WARNING: createChildren hook failed: " .. tostring(err))
         print("[ItemRarityUI] Rarity column disabled - UI may have changed in this game version")
-        ItemRarityUI.showRarityColumn = false
     end
 end
 
@@ -717,22 +971,27 @@ function ISInventoryPane:prerender()
         ItemRarityUI.loadRarityData()
     end
     
-    -- Position rarity header (pcall for B42 safety)
+    -- Toggle rarity header visibility and position (pcall for B42 safety)
     if self.rarityHeader and self.column3 then
-        local ok, err = pcall(function()
-            local typeColWidth = self.column4 - self.column3
-            local effectiveWidth = ItemRarityUI.getEffectiveColumnWidth(typeColWidth)
-            local rarityX = self.column3 + typeColWidth - effectiveWidth - 5
-            
-            self.rarityHeader:setX(rarityX)
-            self.rarityHeader:setY(0)
-            self.rarityHeader:setWidth(effectiveWidth)
-            self.rarityHeader.maximumWidth = math.floor(typeColWidth * 0.5)
-            self.rarityHeader.title = ItemRarityUI.getText("Rarity")
-        end)
-        if not ok and not ItemRarityUI._prerenderWarned then
-            print("[ItemRarityUI] WARNING: prerender hook failed: " .. tostring(err))
-            ItemRarityUI._prerenderWarned = true
+        -- Immediately reflect ModOptions toggle
+        self.rarityHeader:setVisible(ItemRarityUI.showRarityColumn)
+        
+        if ItemRarityUI.showRarityColumn then
+            local ok, err = pcall(function()
+                local typeColWidth = self.column4 - self.column3
+                local effectiveWidth = ItemRarityUI.getEffectiveColumnWidth(typeColWidth)
+                local rarityX = self.column3 + typeColWidth - effectiveWidth - 5
+                
+                self.rarityHeader:setX(rarityX)
+                self.rarityHeader:setY(0)
+                self.rarityHeader:setWidth(effectiveWidth)
+                self.rarityHeader.maximumWidth = math.floor(typeColWidth * 0.5)
+                self.rarityHeader.title = ItemRarityUI.getText("Rarity")
+            end)
+            if not ok and not ItemRarityUI._prerenderWarned then
+                print("[ItemRarityUI] WARNING: prerender hook failed: " .. tostring(err))
+                ItemRarityUI._prerenderWarned = true
+            end
         end
     end
     
@@ -858,6 +1117,56 @@ function ISInventoryPane:renderdetails(doDragged)
     end
     
     return result
+end
+
+--***********************************************************
+--** ModOptions: Show/Hide Rarity Column (B41 and B42)
+--***********************************************************
+-- Applies the "Show Rarity Column" setting. When CleanUI is detected,
+-- the column is forced off (CleanUI provides its own sort menu with Rarity).
+local function applyColumnSetting(val)
+    if ItemRarityUI.cleanUIDetected then
+        ItemRarityUI.showRarityColumn = false
+    else
+        ItemRarityUI.showRarityColumn = val
+    end
+end
+
+-- B42: native ModOptions API
+if PZAPI and PZAPI.ModOptions then
+    local options = PZAPI.ModOptions:create("ItemRarityUI", "Item Rarity UI")
+    options:addDescription("Configure the rarity display in your inventory.")
+    local tickColumn = options:addTickBox(
+        "showRarityColumn",
+        "Show Rarity Column",
+        true,
+        "Show or hide the rarity column in the inventory panel."
+    )
+    options.apply = function(self)
+        applyColumnSetting(tickColumn:getValue())
+    end
+    -- Sync saved option on game start (main menu -> load game)
+    Events.OnGameStart.Add(function()
+        applyColumnSetting(tickColumn:getValue())
+    end)
+    print("[ItemRarityUI] ModOptions registered (B42 native)")
+
+-- B41: "Mod Options" by Star (Workshop 2169435993)
+elseif ModOptions and ModOptions.getInstance then
+    local OPTIONS = { showRarityColumn = true }
+    local settings = ModOptions:getInstance(OPTIONS, "ItemRarityUI", "Item Rarity UI")
+    ModOptions:loadFile()
+    applyColumnSetting(OPTIONS.showRarityColumn)
+    local opt = settings:getData("showRarityColumn")
+    opt.name = "Show Rarity Column"
+    opt.tooltip = "Show or hide the rarity column in the inventory panel."
+    function opt:OnApplyInGame(val)
+        applyColumnSetting(val)
+    end
+    function opt:OnApply(val)
+        applyColumnSetting(val)
+    end
+    print("[ItemRarityUI] ModOptions registered (B41 Mod Options framework)")
 end
 
 --***********************************************************
