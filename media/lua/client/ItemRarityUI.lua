@@ -86,6 +86,12 @@ ItemRarityUI.rarityOverrides = {
     ["Base.308Bullets"] = "epic",             -- rare rifle ammo
     ["Base.Hat_HockeyMask"] = "epic",         -- iconic collectible (Jason mask)
 
+    -- Mold fix: Steel rarer than Iron in loot tables; B42 data had tiers flipped (occurrence filter)
+    ["Base.SteelBarMold"] = "epic",           -- 0.4% chance, rarer than Iron
+    ["Base.SteelIngotMold"] = "epic",
+    ["Base.IronBarMold"] = "rare",            -- 1.2% chance, more common than Steel
+    ["Base.IronIngotMold"] = "rare",
+
     ----------------------------------------------------------------
     -- RARE: Demoted from epic (clothing that math put in epic)
     ----------------------------------------------------------------
