@@ -86,6 +86,12 @@ ItemRarityUI.rarityOverrides = {
     ["Base.308Bullets"] = "epic",             -- rare rifle ammo
     ["Base.Hat_HockeyMask"] = "epic",         -- iconic collectible (Jason mask)
 
+    -- Mold fix: Steel rarer than Iron in loot tables; B42 data had tiers flipped (occurrence filter)
+    ["Base.SteelBarMold"] = "epic",           -- 0.4% chance, rarer than Iron
+    ["Base.SteelIngotMold"] = "epic",
+    ["Base.IronBarMold"] = "rare",            -- 1.2% chance, more common than Steel
+    ["Base.IronIngotMold"] = "rare",
+
     ----------------------------------------------------------------
     -- RARE: Demoted from epic (clothing that math put in epic)
     ----------------------------------------------------------------
@@ -895,11 +901,27 @@ end
 
 -- Sort by rarity functions (ascending and descending)
 -- These respect the equipped/inHotbar sections like the vanilla sort functions
--- Helper to get sortable chance value (crafted/unknown items sort at the end)
+-- Sorts by TIER first (legendary > epic > rare > uncommon > common > crafted > unknown),
+-- then by chance within the same tier for consistent visual grouping.
+
+-- Tier weight: lower = rarer. Items are grouped by tier, not scattered by raw chance.
+local tierWeight = {
+    legendary = 1,
+    epic      = 2,
+    rare      = 3,
+    uncommon  = 4,
+    common    = 5,
+    crafted   = 6,
+}
+
+local function getSortWeight(data)
+    if not data then return 7 end  -- unknown / no data
+    return tierWeight[data.rarity] or 7
+end
+
 local function getSortChance(data)
     if not data then return 99999 end
-    if data.rarity == "crafted" then return 99998 end
-    return data.chance
+    return data.chance or 99999
 end
 
 ISInventoryPane.itemSortByRarityInc = function(a, b)
@@ -918,11 +940,13 @@ ISInventoryPane.itemSortByRarityInc = function(a, b)
     local dataA = ItemRarityUI.getRarityData(itemA:getFullType())
     local dataB = ItemRarityUI.getRarityData(itemB:getFullType())
     
-    local chanceA = getSortChance(dataA)
-    local chanceB = getSortChance(dataB)
+    -- Primary: sort by tier (legendary first)
+    local weightA = getSortWeight(dataA)
+    local weightB = getSortWeight(dataB)
+    if weightA ~= weightB then return weightA < weightB end
     
-    -- Ascending: rarer items first (lower chance = rarer)
-    return chanceA < chanceB
+    -- Secondary: within same tier, rarer items first (lower chance)
+    return getSortChance(dataA) < getSortChance(dataB)
 end
 
 ISInventoryPane.itemSortByRarityDesc = function(a, b)
@@ -941,11 +965,13 @@ ISInventoryPane.itemSortByRarityDesc = function(a, b)
     local dataA = ItemRarityUI.getRarityData(itemA:getFullType())
     local dataB = ItemRarityUI.getRarityData(itemB:getFullType())
     
-    local chanceA = getSortChance(dataA)
-    local chanceB = getSortChance(dataB)
+    -- Primary: sort by tier (common first)
+    local weightA = getSortWeight(dataA)
+    local weightB = getSortWeight(dataB)
+    if weightA ~= weightB then return weightA > weightB end
     
-    -- Descending: common items first (higher chance = more common)
-    return chanceA > chanceB
+    -- Secondary: within same tier, more common items first (higher chance)
+    return getSortChance(dataA) > getSortChance(dataB)
 end
 
 -- Sort by rarity function (uses the vanilla itemSortFunc pattern)
