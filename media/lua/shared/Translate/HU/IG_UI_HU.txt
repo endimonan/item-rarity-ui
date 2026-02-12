@@ -1,0 +1,13 @@
+IG_UI_HU = {
+    IGUI_ItemRarityUI_Legendary = "Legendas",
+    IGUI_ItemRarityUI_Epic = "Epikus",
+    IGUI_ItemRarityUI_Rare = "Ritka",
+    IGUI_ItemRarityUI_Uncommon = "Szokatlan",
+    IGUI_ItemRarityUI_Common = "Kozoenseges",
+    IGUI_ItemRarityUI_Crafted = "Keszitett",
+    IGUI_ItemRarityUI_Unknown = "Ismeretlen",
+    IGUI_ItemRarityUI_Rarity = "Ritkasag",
+    IGUI_ItemRarityUI_ShowRarityColumn = "Ritkasag oszlop megjelenitese",
+    IGUI_ItemRarityUI_ShowRarityColumnTooltip = "A ritkasag oszlop megjelenitese vagy elrejtese a targyak panelen.",
+    IGUI_ItemRarityUI_ModDescription = "A ritkasag megjelenites konfiguracio a leltarban.",
+}

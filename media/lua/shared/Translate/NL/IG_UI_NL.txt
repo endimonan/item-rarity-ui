@@ -1,0 +1,13 @@
+IG_UI_NL = {
+    IGUI_ItemRarityUI_Legendary = "Legendarisch",
+    IGUI_ItemRarityUI_Epic = "Episch",
+    IGUI_ItemRarityUI_Rare = "Zeldzaam",
+    IGUI_ItemRarityUI_Uncommon = "Ongewoon",
+    IGUI_ItemRarityUI_Common = "Gewoon",
+    IGUI_ItemRarityUI_Crafted = "Vervaardigd",
+    IGUI_ItemRarityUI_Unknown = "Onbekend",
+    IGUI_ItemRarityUI_Rarity = "Zeldzaamheid",
+    IGUI_ItemRarityUI_ShowRarityColumn = "Zeldzaamheidskolom tonen",
+    IGUI_ItemRarityUI_ShowRarityColumnTooltip = "Toon of verberg de zeldzaamheidskolom in het inventarispaneel.",
+    IGUI_ItemRarityUI_ModDescription = "Configureer de zeldzaamheidsweergave in je inventaris.",
+}

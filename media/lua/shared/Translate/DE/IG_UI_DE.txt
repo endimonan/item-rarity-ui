@@ -1,0 +1,13 @@
+IG_UI_DE = {
+    IGUI_ItemRarityUI_Legendary = "Legendar",
+    IGUI_ItemRarityUI_Epic = "Episch",
+    IGUI_ItemRarityUI_Rare = "Selten",
+    IGUI_ItemRarityUI_Uncommon = "Ungewohnlich",
+    IGUI_ItemRarityUI_Common = "Gewohnlich",
+    IGUI_ItemRarityUI_Crafted = "Hergestellt",
+    IGUI_ItemRarityUI_Unknown = "Unbekannt",
+    IGUI_ItemRarityUI_Rarity = "Seltenheit",
+    IGUI_ItemRarityUI_ShowRarityColumn = "Seltenheitsspalte anzeigen",
+    IGUI_ItemRarityUI_ShowRarityColumnTooltip = "Seltenheitsspalte im Inventar ein- oder ausblenden.",
+    IGUI_ItemRarityUI_ModDescription = "Seltenheitsanzeige im Inventar konfigurieren.",
+}

@@ -1,0 +1,13 @@
+IG_UI_ES = {
+    IGUI_ItemRarityUI_Legendary = "Legendario",
+    IGUI_ItemRarityUI_Epic = "Epico",
+    IGUI_ItemRarityUI_Rare = "Raro",
+    IGUI_ItemRarityUI_Uncommon = "Poco comun",
+    IGUI_ItemRarityUI_Common = "Comun",
+    IGUI_ItemRarityUI_Crafted = "Fabricado",
+    IGUI_ItemRarityUI_Unknown = "Desconocido",
+    IGUI_ItemRarityUI_Rarity = "Rareza",
+    IGUI_ItemRarityUI_ShowRarityColumn = "Mostrar Columna de Rareza",
+    IGUI_ItemRarityUI_ShowRarityColumnTooltip = "Mostrar u ocultar la columna de rareza en el inventario.",
+    IGUI_ItemRarityUI_ModDescription = "Configura la visualizacion de rareza en tu inventario.",
+}

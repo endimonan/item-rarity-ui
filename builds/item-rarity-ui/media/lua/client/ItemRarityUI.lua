@@ -530,16 +530,16 @@ ItemRarityUI.translations = {
         Unknown = "Ismeretlen",
         Rarity = "Ritkasag"
     },
-    -- 18. Arabic
+    -- 18. Spanish (Argentina)
     AR = {
-        Legendary = "أسطوري",
-        Epic = "ملحمي",
-        Rare = "نادر",
-        Uncommon = "غير شائع",
-        Common = "شائع",
-        Crafted = "مصنوع",
-        Unknown = "مجهول",
-        Rarity = "الندرة"
+        Legendary = "Legendario",
+        Epic = "Epico",
+        Rare = "Raro",
+        Uncommon = "Poco comun",
+        Common = "Comun",
+        Crafted = "Fabricado",
+        Unknown = "Desconocido",
+        Rarity = "Rareza"
     },
     -- 19. Finnish
     FI = {
@@ -606,7 +606,22 @@ function ItemRarityUI.getLanguage()
 end
 
 -- Get translated text
+-- Strategy: try PZ native getText() first (loaded from Translate/*.txt files with correct encoding),
+-- then fall back to inline translations table (works for ASCII/latin languages).
+-- This ensures non-ASCII languages (KO, RU, UA, JP, TH, CH, TW, AR) render correctly
+-- because PZ handles file encoding natively, avoiding inline Lua UTF-8 issues.
 function ItemRarityUI.getText(key)
+    -- 1) Try PZ native translation system (external .txt files with proper encoding)
+    local nativeKey = "IGUI_ItemRarityUI_" .. key
+    if getText then
+        local nativeResult = getText(nativeKey)
+        -- getText() returns the key itself if no translation is found
+        if nativeResult and nativeResult ~= nativeKey then
+            return nativeResult
+        end
+    end
+
+    -- 2) Fallback to inline translations table (safe for ASCII/latin languages)
     local lang = ItemRarityUI.getLanguage()
     local translations = ItemRarityUI.translations[lang] or ItemRarityUI.translations["EN"]
     return translations[key] or ItemRarityUI.translations["EN"][key] or key
@@ -1161,12 +1176,12 @@ end
 -- B42: native ModOptions API
 if PZAPI and PZAPI.ModOptions then
     local options = PZAPI.ModOptions:create("ItemRarityUI", "Item Rarity UI")
-    options:addDescription("Configure the rarity display in your inventory.")
+    options:addDescription(getText("IGUI_ItemRarityUI_ModDescription"))
     local tickColumn = options:addTickBox(
         "showRarityColumn",
-        "Show Rarity Column",
+        getText("IGUI_ItemRarityUI_ShowRarityColumn"),
         true,
-        "Show or hide the rarity column in the inventory panel."
+        getText("IGUI_ItemRarityUI_ShowRarityColumnTooltip")
     )
     options.apply = function(self)
         applyColumnSetting(tickColumn:getValue())
@@ -1184,8 +1199,8 @@ elseif ModOptions and ModOptions.getInstance then
     ModOptions:loadFile()
     applyColumnSetting(OPTIONS.showRarityColumn)
     local opt = settings:getData("showRarityColumn")
-    opt.name = "Show Rarity Column"
-    opt.tooltip = "Show or hide the rarity column in the inventory panel."
+    opt.name = getText("IGUI_ItemRarityUI_ShowRarityColumn")
+    opt.tooltip = getText("IGUI_ItemRarityUI_ShowRarityColumnTooltip")
     function opt:OnApplyInGame(val)
         applyColumnSetting(val)
     end

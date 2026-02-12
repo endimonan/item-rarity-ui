@@ -6,20 +6,24 @@
  * 
  * Project structure for version-specific data:
  *   project-root/
- *     media/lua/shared/ItemRarityData.lua   ← B41 rarity data
- *     media/lua/client/ItemRarityUI.lua     ← shared UI code
- *     42/media/lua/shared/ItemRarityData.lua ← B42 rarity data
+ *     media/lua/shared/ItemRarityData.lua               ← B41 rarity data
+ *     media/lua/client/ItemRarityUI.lua                 ← shared UI code
+ *     media/lua/shared/Translate/{LANG}/IG_UI_{LANG}.txt  ← B41 translation files
+ *     42/media/lua/shared/ItemRarityData.lua            ← B42 rarity data
+ *     42/media/lua/shared/Translate/{LANG}/IG_UI_{LANG}.txt ← B42 translations (all UTF-8)
  * 
  * Deploy structure:
  *   mod-folder/
  *     mod.info, poster.png, modicon.png     ← B41 root
  *     media/lua/client/ItemRarityUI.lua     ← B41 (shared code)
  *     media/lua/shared/ItemRarityData.lua   ← B41 data
+ *     media/lua/shared/Translate/...        ← translation files (B41 encoding)
  *     common/                               ← B42 mandatory (empty)
  *     42/
  *       mod.info, poster.png, modicon.png
  *       media/lua/client/ItemRarityUI.lua   ← same UI code
  *       media/lua/shared/ItemRarityData.lua ← B42-specific data
+ *       media/lua/shared/Translate/...      ← shared UTF-8 + B42 encoding overrides
  */
 
 const MOD_ID = 'item-rarity-ui';
@@ -46,8 +50,17 @@ const B42_DATA_FILES = [
     '42/media/lua/shared/ItemRarityData.lua',     // B42 data lives at 42/
 ];
 
-// All B41 root files (meta + shared code + B41 data)
-const B41_FILES = [...META_FILES, ...SHARED_CODE_FILES, ...B41_DATA_FILES];
+// All 20 supported languages
+const ALL_LANGS = ['EN','PTBR','ES','FR','DE','IT','RU','PL','JP','KO','CH','TW','TH','TR','NL','CS','HU','AR','FI','UA'];
+
+// Translation files - B41 root (UTF-8 for most, UTF-16LE for KO, Cp1251 for RU/UA)
+const TRANSLATE_FILES_B41 = ALL_LANGS.map(lang => `media/lua/shared/Translate/${lang}/IG_UI_${lang}.txt`);
+
+// Translation files - B42 (all UTF-8)
+const TRANSLATE_FILES_B42 = ALL_LANGS.map(lang => `42/media/lua/shared/Translate/${lang}/IG_UI_${lang}.txt`);
+
+// All B41 root files (meta + shared code + B41 data + all translations)
+const B41_FILES = [...META_FILES, ...SHARED_CODE_FILES, ...B41_DATA_FILES, ...TRANSLATE_FILES_B41];
 
 // All files that go into 42/ (meta + shared code + B42 data)
 // Note: B42 data source is at 42/... in the project, but deploys to 42/... in the mod
@@ -107,6 +120,17 @@ function deployDualStructure(targetDir, rootDir, copyFileFn, mkdirFn, logFn) {
         copyFileFn(fallbackSrc, b42DataDest);
         logFn(`    42/media/lua/shared/ItemRarityData.lua (fallback: B41 data)`);
     }
+
+    // B42: copy all translation files (all UTF-8 in 42/)
+    logFn('  [B42] 42/ translations:');
+    for (const file of TRANSLATE_FILES_B42) {
+        const src = path.join(rootDir, file);
+        // Deploy destination: strip the leading "42/" since we're already inside b42Dir
+        const relativePath = file.replace(/^42\//, '');
+        const dest = path.join(b42Dir, relativePath);
+        copyFileFn(src, dest);
+        logFn(`    42/${relativePath}`);
+    }
 }
 
-module.exports = { MOD_ID, META_FILES, SHARED_CODE_FILES, B41_FILES, B42_DATA_FILES, deployDualStructure };
+module.exports = { MOD_ID, META_FILES, SHARED_CODE_FILES, B41_FILES, B42_DATA_FILES, TRANSLATE_FILES_B42, deployDualStructure };

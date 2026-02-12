@@ -1,0 +1,13 @@
+IG_UI_JP = {
+    IGUI_ItemRarityUI_Legendary = "伝説",
+    IGUI_ItemRarityUI_Epic = "エピック",
+    IGUI_ItemRarityUI_Rare = "レア",
+    IGUI_ItemRarityUI_Uncommon = "アンコモン",
+    IGUI_ItemRarityUI_Common = "コモン",
+    IGUI_ItemRarityUI_Crafted = "クラフト",
+    IGUI_ItemRarityUI_Unknown = "不明",
+    IGUI_ItemRarityUI_Rarity = "レアリティ",
+    IGUI_ItemRarityUI_ShowRarityColumn = "レアリティ列を表示",
+    IGUI_ItemRarityUI_ShowRarityColumnTooltip = "インベントリのレアリティ列を表示または非表示にします。",
+    IGUI_ItemRarityUI_ModDescription = "インベントリのレアリティ表示を設定します。",
+}

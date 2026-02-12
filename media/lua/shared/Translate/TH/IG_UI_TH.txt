@@ -1,0 +1,13 @@
+IG_UI_TH = {
+    IGUI_ItemRarityUI_Legendary = "ตำนาน",
+    IGUI_ItemRarityUI_Epic = "มหากาพย์",
+    IGUI_ItemRarityUI_Rare = "หายาก",
+    IGUI_ItemRarityUI_Uncommon = "ไม่ธรรมดา",
+    IGUI_ItemRarityUI_Common = "ธรรมดา",
+    IGUI_ItemRarityUI_Crafted = "ประดิษฐ์",
+    IGUI_ItemRarityUI_Unknown = "ไม่ทราบ",
+    IGUI_ItemRarityUI_Rarity = "ความหายาก",
+    IGUI_ItemRarityUI_ShowRarityColumn = "แสดงคอลัมน์ความหายาก",
+    IGUI_ItemRarityUI_ShowRarityColumnTooltip = "แสดงหรือซ่อนคอลัมน์ความหายากในแผงสิ่งของ",
+    IGUI_ItemRarityUI_ModDescription = "กำหนดค่าการแสดงความหายากในสิ่งของของคุณ",
+}
