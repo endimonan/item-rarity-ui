@@ -11,7 +11,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { MOD_ID, B41_FILES, B42_DATA_FILES, deployDualStructure } = require('./mod-config');
+const { MOD_ID, B41_FILES, B42_DATA_FILES, TRANSLATE_FILES_B42, deployDualStructure } = require('./mod-config');
 
 const ROOT = path.join(__dirname, '..');
 const BUILD_DIR = path.join(ROOT, 'builds', MOD_ID);
@@ -65,7 +65,7 @@ function main() {
     console.log(`Cleaned: ${path.relative(ROOT, BUILD_DIR)}/`);
 
     // Copy all files needed for distribution
-    const ALL_BUILD_FILES = [...B41_FILES, ...B42_DATA_FILES];
+    const ALL_BUILD_FILES = [...B41_FILES, ...B42_DATA_FILES, ...TRANSLATE_FILES_B42];
     let totalSize = 0;
     let fileCount = 0;
 

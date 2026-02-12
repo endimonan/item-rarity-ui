@@ -14,12 +14,14 @@
  *             poster.png                            <-- B41
  *             media/lua/shared/ItemRarityData.lua   <-- B41 rarity data
  *             media/lua/client/ItemRarityUI.lua     <-- shared UI code
+ *             media/lua/shared/Translate/...        <-- translation files (B41 encoding)
  *             common/                               <-- B42 (mandatory, empty)
  *             42/                                   <-- B42
  *               mod.info
  *               poster.png
  *               media/lua/shared/ItemRarityData.lua <-- B42 rarity data
  *               media/lua/client/ItemRarityUI.lua
+ *               media/lua/shared/Translate/...      <-- translations (UTF-8 overrides)
  * 
  * Usage: node deploy-to-steam.js
  */

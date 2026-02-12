@@ -1,0 +1,13 @@
+IG_UI_FI = {
+    IGUI_ItemRarityUI_Legendary = "Legendaarinen",
+    IGUI_ItemRarityUI_Epic = "Eeppinen",
+    IGUI_ItemRarityUI_Rare = "Harvinainen",
+    IGUI_ItemRarityUI_Uncommon = "Epatavallinen",
+    IGUI_ItemRarityUI_Common = "Tavallinen",
+    IGUI_ItemRarityUI_Crafted = "Valmistettu",
+    IGUI_ItemRarityUI_Unknown = "Tuntematon",
+    IGUI_ItemRarityUI_Rarity = "Harvinaisuus",
+    IGUI_ItemRarityUI_ShowRarityColumn = "Nayta harvinaisuussarake",
+    IGUI_ItemRarityUI_ShowRarityColumnTooltip = "Nayta tai piilota harvinaisuussarake tavarapaneelissa.",
+    IGUI_ItemRarityUI_ModDescription = "Muokkaa harvinaisuusnayttoa tavaroissasi.",
+}

@@ -1,0 +1,13 @@
+IG_UI_KO = {
+    IGUI_ItemRarityUI_Legendary = "전설",
+    IGUI_ItemRarityUI_Epic = "에픽",
+    IGUI_ItemRarityUI_Rare = "희귀",
+    IGUI_ItemRarityUI_Uncommon = "고급",
+    IGUI_ItemRarityUI_Common = "일반",
+    IGUI_ItemRarityUI_Crafted = "제작",
+    IGUI_ItemRarityUI_Unknown = "미확인",
+    IGUI_ItemRarityUI_Rarity = "희귀도",
+    IGUI_ItemRarityUI_ShowRarityColumn = "희귀도 열 표시",
+    IGUI_ItemRarityUI_ShowRarityColumnTooltip = "인벤토리 패널에서 희귀도 열을 표시하거나 숨깁니다.",
+    IGUI_ItemRarityUI_ModDescription = "인벤토리의 희귀도 표시를 설정합니다.",
+}

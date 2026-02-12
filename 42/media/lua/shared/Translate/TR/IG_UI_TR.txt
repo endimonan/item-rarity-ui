@@ -1,0 +1,13 @@
+IG_UI_TR = {
+    IGUI_ItemRarityUI_Legendary = "Efsanevi",
+    IGUI_ItemRarityUI_Epic = "Destansi",
+    IGUI_ItemRarityUI_Rare = "Nadir",
+    IGUI_ItemRarityUI_Uncommon = "Siradisi",
+    IGUI_ItemRarityUI_Common = "Yaygin",
+    IGUI_ItemRarityUI_Crafted = "El Yapimi",
+    IGUI_ItemRarityUI_Unknown = "Bilinmeyen",
+    IGUI_ItemRarityUI_Rarity = "Nadirlik",
+    IGUI_ItemRarityUI_ShowRarityColumn = "Nadirlik Sutununu Goster",
+    IGUI_ItemRarityUI_ShowRarityColumnTooltip = "Envanter panelinde nadirlik sutununu goster veya gizle.",
+    IGUI_ItemRarityUI_ModDescription = "Envanterinizdeki nadirlik gorunumunu yapilandirin.",
+}

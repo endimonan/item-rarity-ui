@@ -1,0 +1,13 @@
+IG_UI_UA = {
+    IGUI_ItemRarityUI_Legendary = "Легендарний",
+    IGUI_ItemRarityUI_Epic = "Епічний",
+    IGUI_ItemRarityUI_Rare = "Рідкісний",
+    IGUI_ItemRarityUI_Uncommon = "Незвичайний",
+    IGUI_ItemRarityUI_Common = "Звичайний",
+    IGUI_ItemRarityUI_Crafted = "Створено",
+    IGUI_ItemRarityUI_Unknown = "Невідомо",
+    IGUI_ItemRarityUI_Rarity = "Рідкісність",
+    IGUI_ItemRarityUI_ShowRarityColumn = "Показати колонку рідкісності",
+    IGUI_ItemRarityUI_ShowRarityColumnTooltip = "Показати або сховати колонку рідкісності в панелі інвентарю.",
+    IGUI_ItemRarityUI_ModDescription = "Налаштування відображення рідкісності в інвентарі.",
+}

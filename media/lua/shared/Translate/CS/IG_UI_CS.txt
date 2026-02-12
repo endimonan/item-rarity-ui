@@ -1,0 +1,13 @@
+IG_UI_CS = {
+    IGUI_ItemRarityUI_Legendary = "Legendarni",
+    IGUI_ItemRarityUI_Epic = "Epicky",
+    IGUI_ItemRarityUI_Rare = "Vzacny",
+    IGUI_ItemRarityUI_Uncommon = "Neobvykly",
+    IGUI_ItemRarityUI_Common = "Bezny",
+    IGUI_ItemRarityUI_Crafted = "Vyrobeny",
+    IGUI_ItemRarityUI_Unknown = "Neznamy",
+    IGUI_ItemRarityUI_Rarity = "Vzacnost",
+    IGUI_ItemRarityUI_ShowRarityColumn = "Zobrazit sloupec vzacnosti",
+    IGUI_ItemRarityUI_ShowRarityColumnTooltip = "Zobrazit nebo skryt sloupec vzacnosti v panelu inventare.",
+    IGUI_ItemRarityUI_ModDescription = "Nastavte zobrazeni vzacnosti ve vasem inventari.",
+}
