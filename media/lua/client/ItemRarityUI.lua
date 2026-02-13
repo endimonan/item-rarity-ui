@@ -521,6 +521,59 @@ ItemRarityUI.rarityOverrides = {
     ["Base.Football2"] = "uncommon",
     ["Base.FertilizerEmpty"] = "uncommon",
     ["Base.Pipe"] = "uncommon",
+
+    ----------------------------------------------------------------
+    -- LEFT/RIGHT MIRROR: PZ treats L/R body slots as different items.
+    -- One side has loot data, the other is crafted/0-chance.
+    -- These overrides ensure both sides show the same rarity.
+    ----------------------------------------------------------------
+
+    -- ElbowPads (Right is crafted in B42, Left has real data)
+    ["Base.ElbowPad_Right_TINT"] = "epic",
+    ["Base.ElbowPad_Right_Military"] = "rare",
+    ["Base.ElbowPad_Right_Sport"] = "uncommon",
+    ["Base.ElbowPad_Right_Tactical"] = "uncommon",
+    ["Base.ElbowPad_Right_Workman"] = "common",
+
+    -- Kneepads (Right is crafted in B42, Left has real data)
+    ["Base.Kneepad_Right"] = "rare",
+    ["Base.Kneepad_Right_TINT"] = "rare",
+    ["Base.Kneepad_Right_Military"] = "uncommon",
+    ["Base.Kneepad_Right_Tactical"] = "uncommon",
+    ["Base.Kneepad_Right_Sport"] = "common",
+    ["Base.Kneepad_Right_Workman"] = "common",
+
+    -- Greaves (Right is crafted in B42, Left has real data)
+    ["Base.Greave_Right"] = "rare",
+    ["Base.GreaveSpikeScrap_Right"] = "rare",
+    ["Base.GreaveScrap_Right"] = "rare",
+    ["Base.GreaveTire_Right"] = "rare",
+    ["Base.GreaveBodyArmour_Right"] = "rare",
+
+    -- Vambraces (Right is crafted in B42, Left has real data)
+    ["Base.Vambrace_Right"] = "rare",
+    ["Base.VambraceSpikeScrap_Right"] = "rare",
+    ["Base.VambraceScrap_Right"] = "rare",
+    ["Base.VambraceTire_Right"] = "rare",
+    ["Base.Vambrace_Leather_Right"] = "rare",
+    ["Base.Vambrace_BodyArmour_Right"] = "rare",
+    ["Base.VambraceMagazine_Right"] = "rare",
+
+    -- WristWatches (B42: Right=uncommon but Left=rare; B41: Left=rare/0% but Right=uncommon)
+    ["Base.WristWatch_Right_Expensive"] = "rare",
+    ["Base.WristWatch_Right_DigitalDress"] = "rare",
+    ["Base.WristWatch_Left_ClassicBlack"] = "uncommon",
+    ["Base.WristWatch_Left_ClassicBrown"] = "uncommon",
+    ["Base.WristWatch_Left_ClassicGold"] = "uncommon",
+    ["Base.WristWatch_Left_DigitalBlack"] = "uncommon",
+    ["Base.WristWatch_Left_DigitalRed"] = "uncommon",
+
+    -- Eyepatch (match existing Left override)
+    ["Base.Glasses_Eyepatch_Right"] = "rare",
+
+    -- Rings (Right=rare/0% in both versions, Left has real data)
+    ["Base.Ring_Right_RingFinger_Silver"] = "uncommon",
+    ["Base.Ring_Right_RingFinger_Gold"] = "uncommon",
 }
 
 -- Rarity tiers configuration (based on Weighted Real Chance)
