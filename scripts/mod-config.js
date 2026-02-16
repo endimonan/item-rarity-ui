@@ -51,7 +51,7 @@ const B42_DATA_FILES = [
 ];
 
 // All 20 supported languages
-const ALL_LANGS = ['EN','PTBR','ES','FR','DE','IT','RU','PL','JP','KO','CH','TW','TH','TR','NL','CS','HU','AR','FI','UA'];
+const ALL_LANGS = ['EN','PTBR','ES','FR','DE','IT','RU','PL','JP','KO','CN','CH','TH','TR','NL','CS','HU','AR','FI','UA'];
 
 // Translation files - B41 root (UTF-8 for most, UTF-16LE for KO, Cp1251 for RU/UA)
 const TRANSLATE_FILES_B41 = ALL_LANGS.map(lang => `media/lua/shared/Translate/${lang}/IG_UI_${lang}.txt`);
