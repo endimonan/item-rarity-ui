@@ -50,6 +50,11 @@ ItemRarityUI.rarityOverrides = {
     ["Base.Hat_NBCmask"] = "legendary",       -- NBC gas mask, extremely rare and valuable
     ["Base.HazmatSuit"] = "legendary",        -- only full contamination protection, critical in B42
 
+    -- Hard-to-find iconic items promoted by gameplay feel
+    ["Base.Hat_Spiffo"] = "legendary",          -- zombie-only near Spiffo restaurants, B41: legendary (0.46%)
+    ["Base.SpiffoSuit"] = "legendary",          -- zombie-only, part of iconic Spiffo set
+    ["Base.ScratchTicket_Winner"] = "legendary", -- ~1/8.8M multi-roll probability, rarest achievable item
+
     ----------------------------------------------------------------
     -- EPIC: Military/tactical gear and unique items promoted from rare
     ----------------------------------------------------------------
@@ -92,9 +97,65 @@ ItemRarityUI.rarityOverrides = {
     ["Base.IronBarMold"] = "rare",            -- 1.2% chance, more common than Steel
     ["Base.IronIngotMold"] = "rare",
 
+    -- B41 ice pick: decent melee tool but not legendary
+    ["Base.IcePick"] = "epic",
+
+    -- B42 hollow books with stashes: useful but not legendary-tier
+    ["Base.HollowBook_Handgun"] = "epic",     -- hidden handgun stash
+    ["Base.HollowBook_Whiskey"] = "epic",     -- hidden whiskey stash
+    ["Base.HollowBook_Valuables"] = "epic",   -- hidden valuables stash
+
+    -- B42 animal hides: valuable crafting material but not legendary
+    ["Base.CowHide"] = "epic",
+    ["Base.DappleDeerHide"] = "epic",
+    ["Base.DeerHide"] = "epic",
+
+    -- B42 forged tools: good tools but craftable, not legendary
+    ["Base.ScytheForged"] = "epic",
+    ["Base.PickAxeForged"] = "epic",
+    ["Base.GardenFork_Forged"] = "epic",
+
+    -- B42 improvised nail weapons: effective but crude, not legendary
+    ["Base.BaseballBat_Broken_Nails"] = "epic",
+    ["Base.Handle_Nails"] = "epic",
+    ["Base.LongHandle_Broken_Nails"] = "epic",
+    ["Base.BowlingPin_Nails"] = "epic",
+
+    -- B42 misc items: useful but not legendary-tier
+    ["Base.RailroadSpikeKnife"] = "epic",     -- crafted knife
+    ["Base.ManPackRadio"] = "epic",           -- military radio, useful tool
+    ["Base.Glasses_Prescription_Shooting"] = "epic", -- tactical shooting glasses
+    ["Base.Shirt_HawaiianRed"] = "epic",      -- iconic shirt, collectible
+
+    -- Hard-to-find items promoted by gameplay feel (zombie/foraging/event-only)
+    ["Base.Hat_BaseballCap_JaysChicken"] = "epic",         -- chance=0, foraging-only in trailer parks
+    ["Base.Hat_BaseballCap_JaysChicken_Reverse"] = "epic", -- chance=0, foraging-only variant
+    ["Base.Hat_GoldStar"] = "epic",             -- chance=0, foraging-only boppers
+    ["Base.WeddingJacket"] = "epic",            -- rare (8.3%, 5 occ), church events only, part of wedding set
+    ["Base.Hat_BunnyEarsBlack"] = "epic",       -- rare (5.6%, 4 occ), strip club / lingerie only
+    ["Base.Hat_BunnyEarsWhite"] = "epic",       -- rare (5.6%, 4 occ), strip club / lingerie only
+    ["Base.HomeAlarm"] = "epic",                -- rare (8.1%, 4 occ), extremely specific spawn locations
+
+    -- Uncommon items promoted by gameplay feel / B41 consistency
+    ["Base.Generator_Blue"] = "epic",           -- colored generator, 1 occ (1.9%), base Generator is legendary
+    ["Base.Generator_Yellow"] = "epic",         -- colored generator, 1 occ (1.9%), base Generator is legendary
+    ["Base.Bag_ALICEpack_DesertCamo"] = "epic", -- desert camo ALICE, 1 occ (1.2%), regular ALICE already epic
+    ["Base.Bag_ALICEpack_Army"] = "epic",       -- B42: rare (4.7%, 10 occ), military ALICE variant
+    ["Base.Bag_ALICE_BeltSus"] = "epic",        -- B42: rare (0.7%, 1 occ), ALICE belt/suspenders
+    ["Base.Bag_ALICE_BeltSus_Camo"] = "epic",   -- B42: rare (4.2%, 15 occ), camo ALICE belt
+    ["Base.Bag_ALICE_BeltSus_Green"] = "epic",  -- B42: rare (4.2%, 15 occ), green ALICE belt
+    ["Base.Hat_SPHhelmet"] = "epic",            -- military pilot helmet, B42: epic (2.2%), B41: uncommon (1.6%, 1 occ)
+    ["Base.Mov_ConcreteMixer"] = "epic",        -- concrete mixer, B42: epic (1.6%), B41: uncommon (1.4%, 1 occ)
+
     ----------------------------------------------------------------
     -- RARE: Demoted from epic (clothing that math put in epic)
     ----------------------------------------------------------------
+
+    -- Bunny set: strip club only, 1 occurrence each
+    ["Base.BunnySuitBlack"] = "rare",           -- uncommon (2.8%, 1 occ), strip club only
+    ["Base.BunnySuitPink"] = "rare",            -- uncommon (2.8%, 1 occ), strip club only
+    ["Base.BunnyTail"] = "rare",                -- uncommon (3.6%, 1 occ), strip club only
+
     -- Umbrellas: not epic-worthy
     ["Base.ClosedUmbrellaBlack"] = "rare",
     ["Base.ClosedUmbrellaBlue"] = "rare",
@@ -162,6 +223,176 @@ ItemRarityUI.rarityOverrides = {
     -- GunLight: chance 0, occurrences 0
     ["Base.GunLight"] = "rare",
 
+    -- B42 canned food boxes: bulk food containers, not legendary
+    ["Base.CannedMilk_Box"] = "rare",
+    ["Base.CannedBolognese_Box"] = "rare",
+    ["Base.CannedChili_Box"] = "rare",
+    ["Base.CannedCornedBeef_Box"] = "rare",
+    ["Base.CannedMushroomSoup_Box"] = "rare",
+    ["Base.CannedSardines_Box"] = "rare",
+    ["Base.TinnedBeans_Box"] = "rare",
+    ["Base.TinnedSoup_Box"] = "rare",
+    ["Base.CannedCarrots_Box"] = "rare",
+    ["Base.CannedCorn_Box"] = "rare",
+    ["Base.CannedPeaches_Box"] = "rare",
+    ["Base.CannedPeas_Box"] = "rare",
+    ["Base.CannedPineapple_Box"] = "rare",
+    ["Base.CannedPotato_Box"] = "rare",
+    ["Base.CannedTomato_Box"] = "rare",
+    ["Base.CannedFruitBeverage_Box"] = "rare",
+    ["Base.CannedFruitCocktail_Box"] = "rare",
+
+    -- B42 decorative/moveable items: no gameplay value
+    ["Base.Mov_RedRotaryPhone"] = "rare",
+    ["Base.Mov_WhiteRotaryPhone"] = "rare",
+    ["Base.Mov_BeigeRotaryPhone"] = "rare",
+    ["Base.Mov_BlackRotaryPhone"] = "rare",
+    ["Base.OujaBoard"] = "rare",
+    ["Base.Humidor"] = "rare",
+    ["Base.Pillow_Heart"] = "rare",
+    ["Base.PhotoAlbum_Old"] = "rare",
+    -- Character pictures: rare override for B41 compat (B41 has chance=0, common)
+    ["Base.BobPic"] = "rare",
+    ["Base.CaseyPic"] = "rare",
+    ["Base.ChrisPic"] = "rare",
+    ["Base.HankPic"] = "rare",
+    ["Base.JamesPic"] = "rare",
+    ["Base.KatePic"] = "rare",
+    ["Base.MariannePic"] = "rare",
+    ["Base.CortmanPic"] = "rare",
+    ["Base.CookieJar_Bear"] = "rare",
+    ["Base.HalloweenCandyBucket"] = "rare",
+    ["Base.AdhesiveTapeBox"] = "rare",
+    ["Base.JewelleryBox_Fancy"] = "rare",
+
+    -- B42 cosmetic glasses: no protection value
+    ["Base.Glasses_Cosmetic_70s_Gold"] = "rare",
+    ["Base.Glasses_Cosmetic_CatsEye"] = "rare",
+    ["Base.Glasses_Cosmetic_HalfMoon"] = "rare",
+    ["Base.Glasses_Cosmetic_MonocleLeft"] = "rare",
+    ["Base.Glasses_Cosmetic_Normal_HornRimmed"] = "rare",
+    ["Base.Glasses_Cosmetic_Round_Normal"] = "rare",
+
+    -- B42 gold cutlery: decorative, no combat value
+    ["Base.ButterKnife_Gold"] = "rare",
+    ["Base.Fork_Gold"] = "rare",
+    ["Base.Spoon_Gold"] = "rare",
+
+    -- B42 keyrings: cosmetic accessories
+    ["Base.KeyRing_WestMaple"] = "rare",
+    ["Base.KeyRing_Clover"] = "rare",
+
+    -- B42 clothing: low spawn but no protection/utility value
+    ["Base.Shirt_Jockey04"] = "rare",
+    ["Base.Shirt_Priest"] = "rare",
+    ["Base.Shirt_Sheriff"] = "rare",
+    ["Base.Trousers_Sheriff"] = "rare",
+    ["Base.Tshirt_Profession_RangerGreen"] = "rare",
+    ["Base.Tshirt_Sheriff"] = "rare",
+    ["Base.Vest_Trucker"] = "rare",
+    ["Base.Hat_PeakedCapYacht"] = "rare",
+    ["Base.Hat_Pilgrim"] = "rare",
+    ["Base.Hat_Stovepipe"] = "rare",
+    ["Base.Hat_Stovepipe_UncleSam"] = "rare",
+    ["Base.Hat_FishermanRainHat"] = "rare",
+    ["Base.Hat_RidingHelmet"] = "rare",
+    ["Base.Hat_CrashHelmet_Stars"] = "rare",
+    -- Hat_HalloweenMaskPumpkin: REMOVED override, B42 data correctly classifies as legendary (0.62%)
+    ["Base.Bag_Schoolbag_Patches"] = "rare",
+
+    -- B42 hollow books (containers): useful stash, but not legendary
+    ["Base.HollowBook"] = "rare",
+    ["Base.HollowBook_Kids"] = "rare",
+
+    -- B42 scarves/winter accessories: no real protection
+    ["Base.Scarf_StripeBlueWhite"] = "rare",
+    ["Base.Scarf_StripeRedWhite"] = "rare",
+    ["Base.Scarf_White"] = "rare",
+    ["Base.Hat_WinterHat"] = "rare",
+
+    -- B42 hats: cosmetic/seasonal
+    ["Base.Hat_SummerFlowerHat"] = "rare",
+    ["Base.Hat_WeddingVeil"] = "epic",            -- B42: epic (3.7%), event item, part of wedding set
+    ["Base.Hat_Antlers"] = "epic",                -- B42: epic (3.2%), rare seasonal headwear
+    ["Base.Hat_FastFood"] = "rare",
+    ["Base.Hat_SantaHat"] = "epic",               -- B42: epic (3.2%), seasonal, sought-after
+    ["Base.Hat_SantaHatGreen"] = "epic",           -- B42: epic (3.2%), seasonal, sought-after
+    ["Base.Hat_Raccoon"] = "epic",                -- B42: epic (3.2%), iconic coonskin cap
+    ["Base.Hat_BicycleHelmet"] = "rare",
+
+    -- B42 eyewear: cosmetic
+    ["Base.Glasses_JackieO"] = "rare",
+    ["Base.Glasses_Eyepatch_Left"] = "rare",
+
+    -- B42 clothing: no utility
+    ["Base.Shorts_FootballPants"] = "rare",
+
+    -- B42 underwear: (already listed above in "Underwear should not be epic" section)
+
+    -- B42 decorative/moveable: no gameplay value
+    ["Base.Mov_PalletEmpty"] = "rare",
+    ["Base.Mov_Espresso"] = "rare",
+    ["Base.Mov_SignOutOfGas_Fossoil"] = "rare",
+    ["Base.Mov_PaintingElisa"] = "rare",
+    ["Base.Mov_PosterDroids"] = "rare",
+    ["Base.Mov_PosterElement"] = "rare",
+    ["Base.Mov_PosterOmega"] = "rare",
+    ["Base.Mov_PosterPaws"] = "rare",
+
+    -- B42 food/consumables: not epic-worthy
+    ["Base.WatermelonSliced"] = "rare",
+    ["Base.TortillaChipsBaked"] = "rare",
+    ["Base.GroceryBagGourmet"] = "rare",
+    ["Base.PizzaRecipe"] = "rare",
+    ["Base.PopBottleRareEmpty"] = "rare",
+
+    -- B42 dried herbs: foraging items, not epic
+    ["Base.BlackSageDried"] = "rare",
+    ["Base.ComfreyDried"] = "rare",
+    ["Base.CommonMallowDried"] = "rare",
+    ["Base.Ginseng"] = "rare",
+    ["Base.PlantainDried"] = "rare",
+    ["Base.WildGarlicDried"] = "rare",
+
+    -- B42 specimen jars: collectible but no utility
+    ["Base.Specimen_Beetles"] = "rare",
+    ["Base.Specimen_Butterflies"] = "rare",
+    ["Base.Specimen_Centipedes"] = "rare",
+    ["Base.Specimen_Insects"] = "rare",
+
+    -- B42 bones/fossils: no gameplay value
+    ["Base.LargeAnimalBone"] = "rare",
+    ["Base.Hominid_Skull_Fragment"] = "rare",
+
+    -- B42 misc items: not epic-worthy
+    ["Base.TableLeg_Broken"] = "rare",
+    ["Base.FlintNodule"] = "rare",
+    ["Base.Paperback_Quackery"] = "rare",
+    ["Base.KeyRing_Kitty"] = "rare",
+    ["Base.KeyRing_EightBall"] = "rare",
+    ["Base.BucketLargeWood"] = "rare",
+
+    -- Promoted to rare by gameplay perception (players perceive these as harder to find)
+    ["Base.Vest_BulletCivilian"] = "rare",      -- uncommon (23.7%), civilian bulletproof vest, high protection
+    ["Base.MotionSensor"] = "rare",             -- uncommon (16.8%), useful electronics, was rare in B41
+    ["Radio.ScannerModule"] = "rare",           -- uncommon (19.4%), useful radio scanner, was rare in B41
+    ["Base.MugSpiffo"] = "rare",                -- uncommon (16.7%), Spiffo collectible, cult item
+    ["Base.Hat_PartyHat_Stars"] = "rare",       -- uncommon (2.7%, 1 occ), seasonal, single location
+    ["Base.Hat_PartyHat_TINT"] = "rare",        -- uncommon (2.7%, 1 occ), seasonal, single location
+
+    -- Leather jackets: good protection, players perceive as valuable finds
+    ["Base.Jacket_Leather"] = "rare",           -- uncommon (17.1%), iconic protective jacket
+    ["Base.Jacket_LeatherBlack"] = "rare",      -- chance=0, uncommon, zombie-only variant
+
+    -- Doctor bag: B41 common with only 1 occurrence, B42 already rare
+    ["Base.Bag_DoctorBag"] = "rare",            -- B41: common (42%, 1 occ!), B42: rare (10.9%, 4 occ)
+
+    -- Leather trousers: consistency with Jacket_Leather (already rare)
+    ["Base.Trousers_LeatherBlack"] = "rare",    -- uncommon (17.3%, 12 occ), matches leather jacket override
+
+    -- Spiffo fast food hat: collectible, B41 only 1 occurrence
+    ["Base.Hat_FastFood_Spiffo"] = "rare",      -- B41: uncommon (2.9%, 1 occ), B42: uncommon (23.2%, 9 occ)
+
     ----------------------------------------------------------------
     -- UNCOMMON: Demoted from rare (mundane items math classified as rare)
     ----------------------------------------------------------------
@@ -205,15 +436,10 @@ ItemRarityUI.rarityOverrides = {
     ["Base.Mov_Lamp4"] = "uncommon",
     ["Base.Mov_Lamp5"] = "uncommon",
     ["Base.Mov_Lamp6"] = "uncommon",
-    ["Base.Mov_PaintingElisa"] = "uncommon",
-    ["Base.Mov_PosterDroids"] = "uncommon",
-    ["Base.Mov_PosterElement"] = "uncommon",
-    ["Base.Mov_PosterOmega"] = "uncommon",
-    ["Base.Mov_PosterPaws"] = "uncommon",
+    -- Mov_PaintingElisa, PosterDroids/Element/Omega/Paws, PalletEmpty: moved to rare section above
     ["Base.Mov_SignArmy"] = "uncommon",
     ["Base.Mov_SignRestricted"] = "uncommon",
     ["Base.Mov_SignWarning"] = "uncommon",
-    ["Base.Mov_PalletEmpty"] = "uncommon",
     ["Base.Mov_Microphone"] = "uncommon",
     ["Base.Mov_DesktopComputer"] = "uncommon",
     ["Base.Mov_Microwave"] = "uncommon",
@@ -295,6 +521,59 @@ ItemRarityUI.rarityOverrides = {
     ["Base.Football2"] = "uncommon",
     ["Base.FertilizerEmpty"] = "uncommon",
     ["Base.Pipe"] = "uncommon",
+
+    ----------------------------------------------------------------
+    -- LEFT/RIGHT MIRROR: PZ treats L/R body slots as different items.
+    -- One side has loot data, the other is crafted/0-chance.
+    -- These overrides ensure both sides show the same rarity.
+    ----------------------------------------------------------------
+
+    -- ElbowPads (Right is crafted in B42, Left has real data)
+    ["Base.ElbowPad_Right_TINT"] = "epic",
+    ["Base.ElbowPad_Right_Military"] = "rare",
+    ["Base.ElbowPad_Right_Sport"] = "uncommon",
+    ["Base.ElbowPad_Right_Tactical"] = "uncommon",
+    ["Base.ElbowPad_Right_Workman"] = "common",
+
+    -- Kneepads (Right is crafted in B42, Left has real data)
+    ["Base.Kneepad_Right"] = "rare",
+    ["Base.Kneepad_Right_TINT"] = "rare",
+    ["Base.Kneepad_Right_Military"] = "uncommon",
+    ["Base.Kneepad_Right_Tactical"] = "uncommon",
+    ["Base.Kneepad_Right_Sport"] = "common",
+    ["Base.Kneepad_Right_Workman"] = "common",
+
+    -- Greaves (Right is crafted in B42, Left has real data)
+    ["Base.Greave_Right"] = "rare",
+    ["Base.GreaveSpikeScrap_Right"] = "rare",
+    ["Base.GreaveScrap_Right"] = "rare",
+    ["Base.GreaveTire_Right"] = "rare",
+    ["Base.GreaveBodyArmour_Right"] = "rare",
+
+    -- Vambraces (Right is crafted in B42, Left has real data)
+    ["Base.Vambrace_Right"] = "rare",
+    ["Base.VambraceSpikeScrap_Right"] = "rare",
+    ["Base.VambraceScrap_Right"] = "rare",
+    ["Base.VambraceTire_Right"] = "rare",
+    ["Base.Vambrace_Leather_Right"] = "rare",
+    ["Base.Vambrace_BodyArmour_Right"] = "rare",
+    ["Base.VambraceMagazine_Right"] = "rare",
+
+    -- WristWatches (B42: Right=uncommon but Left=rare; B41: Left=rare/0% but Right=uncommon)
+    ["Base.WristWatch_Right_Expensive"] = "rare",
+    ["Base.WristWatch_Right_DigitalDress"] = "rare",
+    ["Base.WristWatch_Left_ClassicBlack"] = "uncommon",
+    ["Base.WristWatch_Left_ClassicBrown"] = "uncommon",
+    ["Base.WristWatch_Left_ClassicGold"] = "uncommon",
+    ["Base.WristWatch_Left_DigitalBlack"] = "uncommon",
+    ["Base.WristWatch_Left_DigitalRed"] = "uncommon",
+
+    -- Eyepatch (match existing Left override)
+    ["Base.Glasses_Eyepatch_Right"] = "rare",
+
+    -- Rings (Right=rare/0% in both versions, Left has real data)
+    ["Base.Ring_Right_RingFinger_Silver"] = "uncommon",
+    ["Base.Ring_Right_RingFinger_Gold"] = "uncommon",
 }
 
 -- Rarity tiers configuration (based on Weighted Real Chance)
