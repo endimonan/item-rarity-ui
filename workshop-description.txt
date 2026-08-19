@@ -1,3 +1,11 @@
+[h1]🛠️ Source Code on GitHub - Contributors Welcome![/h1]
+The source code is public. Bug reports, pull requests, translations and ideas are all welcome:
+
+➜ [b][url=https://github.com/endimonan/item-rarity-ui]github.com/endimonan/item-rarity-ui[/url][/b]
+
+The mod itself stays mine: please don't reupload or repack it anywhere. This Workshop page is the only official download. Full terms are in the LICENSE file on GitHub.
+
+[hr][/hr]
 Please, Like this mod if you enjoyed it, suggestions are welcome.
 
 I develop these projects because I love them, but would be nice to see some support from you to this lovely developer ^^
@@ -26,7 +34,7 @@ Rarity is based on how often an item actually shows up across all loot sources. 
 [*][b]Common[/b] (gray) - You'll trip over these in every kitchen and bathroom.
 [*][b]Crafted[/b] (cyan) - Items only obtainable through crafting.
 [/list]
-Items that don't appear in any loot table show as Unknown.
+Items the mod has no data for (mostly items from other mods) show as Unknown.
 
 [h1]Features[/h1]
 [list]
@@ -43,23 +51,31 @@ Items that don't appear in any loot table show as Unknown.
 [h1]Translations[/h1]
 Fully translated into 20 languages:
 English, Portuguese (BR/PT), Spanish, French, German, Italian, Russian, Polish, Japanese, Korean, Chinese (Simplified & Traditional), Thai, Turkish, Dutch, Czech, Hungarian, Arabic, Finnish, Ukrainian.
-If your language is missing or a translation feels off, let me know.
+If your language is missing or a translation feels off, [url=https://github.com/endimonan/item-rarity-ui/issues]open an issue on GitHub[/url] or let me know in the comments.
 
 [h1]Compatibility[/h1]
 [list]
-[*]Build 41 and Build 42 (42.13.1)
+[*]Build 41 and Build 42
 [*][b]ModOptions is only required for build 41[/b]
 [*]Safe to add to existing saves
-[*]CleanUI V2.3 - rarity column is auto-disabled, colored names remain active, and a "Rarity" sort option is added to CleanUI's sort menu
+[*]CleanUI - rarity column is auto-disabled, colored names remain active, and a "Rarity" sort option is added to CleanUI's sort menu
 [/list]
 
-Noted that for dedicated servers on B42 your servertest.ini (or whatever other name it may be) needs to be formated like this:
+For dedicated servers on B42: on current builds (42.19 and newer) the normal format works in your servertest.ini (or whatever other name it may be):
 
-[b]Mods=\ItemRarityUI;\Mod2;\Mod3;\[/b]
-[b]WorkshopItems=3662387304;Mod2;Mod3[/b]
+[b]Mods=ItemRarityUI;OtherModId[/b]
+[b]WorkshopItems=3662387304;1111111111[/b]
+
+If you're still on an older B42 MP build (42.13 to 42.18), each mod id needs a leading backslash:
+
+[b]Mods=\ItemRarityUI;\OtherModId[/b]
 
 🚀 Future Plans
-We’ll soon be launching a European server so our friends can enjoy MP together.
+We'll soon be launching a European server so our friends can enjoy MP together.
+
+[hr][/hr]
+🛠️ Source code & contributions: [url=https://github.com/endimonan/item-rarity-ui]github.com/endimonan/item-rarity-ui[/url]
+🐛 Found a bug? [url=https://github.com/endimonan/item-rarity-ui/issues]Report it here[/url]
 
 Cheers
 
