@@ -2,7 +2,7 @@
 
 A Project Zomboid mod that colors item names and adds a Rarity column to the inventory, based on the actual spawn chances in the game's loot tables. Works on Build 41 and Build 42.
 
-[Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3662387304) · [Discord](https://discord.gg/8qD9Fc7tzT) · [Ko-fi](https://ko-fi.com/endimonan)
+[Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3662387304) · [Ko-fi](https://ko-fi.com/endimonan)
 
 ## What it does
 
