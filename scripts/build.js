@@ -10,6 +10,7 @@
  */
 
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const { MOD_ID, B41_FILES, B42_DATA_FILES, TRANSLATE_FILES_B42, deployDualStructure } = require('./mod-config');
 
@@ -17,7 +18,7 @@ const ROOT = path.join(__dirname, '..');
 const BUILD_DIR = path.join(ROOT, 'builds', MOD_ID);
 
 // Local Zomboid mods path for testing
-const ZOMBOID_MODS_DIR = path.join('C:\\Users\\ems_f\\Zomboid\\mods', MOD_ID);
+const ZOMBOID_MODS_DIR = path.join(os.homedir(), 'Zomboid', 'mods', MOD_ID);
 
 /**
  * Copy a file, creating parent directories as needed

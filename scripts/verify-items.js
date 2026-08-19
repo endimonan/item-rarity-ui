@@ -1,8 +1,14 @@
 /**
  * Quick verify of known items in the generated rarity data
+ *
+ * Usage: node verify-items.js [--b42]
  */
 const fs = require('fs');
-const data = fs.readFileSync('media/lua/shared/ItemRarityData.lua', 'utf8');
+const path = require('path');
+
+const useB42 = process.argv.includes('--b42');
+const DATA_FILE = path.join(__dirname, '..', useB42 ? '42' : '.', 'media', 'lua', 'shared', 'ItemRarityData.lua');
+const data = fs.readFileSync(DATA_FILE, 'utf8');
 
 const known = [
     'Base.Katana', 'Base.Katana_Broken', 'Base.Sledgehammer', 'Base.Axe',

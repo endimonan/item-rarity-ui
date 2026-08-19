@@ -1,302 +1,86 @@
 # Item Rarity UI
 
-A Project Zomboid mod that displays item rarity in the inventory with colored names based on spawn chance.
-Compatible with **Build 41** and **Build 42**.
+A Project Zomboid mod that colors item names and adds a Rarity column to the inventory, based on the actual spawn chances in the game's loot tables. Works on Build 41 and Build 42.
 
-## Features
+[Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3662387304) · [Discord](https://discord.gg/8qD9Fc7tzT) · [Ko-fi](https://ko-fi.com/endimonan)
 
-- **Colored item names** based on rarity (RPG-style)
-- **New "Rarity" column** in inventory that shows the rarity tier
-- **Sortable** - click the Rarity column to sort items by rarity
-- **Resizable column** - drag to resize like other columns
-- **Responsive** - dynamic column width for different screen resolutions (Steam Deck compatible)
-- **Crafted items** - items only obtainable via crafting get a special "Crafted" label
-- **Multi-language support** - 20 languages supported
-- **B41 + B42 dual data** - separate rarity lists for each game version
-- **Works with existing saves** - no need to start a new game
+## What it does
 
-## Rarity Tiers
+Every item gets a rarity tier based on how often it actually shows up across all loot sources. The lower the weighted spawn chance, the rarer the item.
 
-| Rarity | Color | Threshold |
-|--------|-------|-----------|
-| Legendary | Orange/Gold | Total weighted chance < 0.01 (min 3 occurrences) |
-| Epic | Purple | 0.01 - 0.04 (min 2 occurrences) |
-| Rare | Blue | 0.04 - 0.12 |
-| Uncommon | Green | 0.12 - 0.40 |
-| Common | Gray/White | > 0.40 |
-| Crafted | Cyan | Not found in loot tables, only craftable |
+| Tier | Color | Weighted chance |
+|------|-------|-----------------|
+| Legendary | orange | below 0.01, needs 3+ loot lists |
+| Epic | purple | 0.01 to 0.04, needs 2+ loot lists |
+| Rare | blue | 0.04 to 0.12 |
+| Uncommon | green | 0.12 to 0.40 |
+| Common | gray | 0.40 and up |
+| Crafted | cyan | not in any loot table, only craftable |
 
-## How Rarity is Calculated
+Items the mod has no data for (mostly items from other mods) show as Unknown.
 
-This mod uses the **Dual-Factor Weighted Real Chance** method:
+Item names get colored right in the inventory. The Rarity column is sortable, resizable, and safe to add to existing saves. Client side only, so it works on any server. Translated into 20 languages. If you run CleanUI, the mod disables its own column, keeps the colored names, and adds a Rarity option to CleanUI's sort menu.
 
-1. Parse all loot tables from 3 game files: `ProceduralDistributions.lua`, `Distributions.lua`, `VehicleDistributions.lua`
-2. For each loot list, calculate: `realChance = itemWeight / sumOfAllWeightsInList`
-3. Weight each list's contribution by two factors:
-   - **Size weight**: `min(items_in_list, 30) / 30` — larger lists = more important containers
-   - **Volume weight**: `min(total_weight, 10) / 10` — higher total weight = more substantial loot source
-   - **Combined**: `listWeight = sizeWeight × volumeWeight`
-4. For each item: `weightedChance = realChance × listWeight`
-5. Sum all `weightedChance` values across every list the item appears in
+## How rarity is calculated
 
-This dual-factor system ensures micro-lists (zombie outfit tables with 1-3 items and tiny total weights) contribute almost nothing, while real loot containers (lockers, shelves, gun stores) contribute fully. No data is discarded.
+The rarity data is generated offline by the scripts in `scripts/`. The mod itself only reads a Lua table, there is no runtime calculation.
 
-### Additional Adjustments
+For every loot list in `ProceduralDistributions.lua`, `Distributions.lua` and `VehicleDistributions.lua`:
 
-- **Confidence threshold**: Legendary needs 3+ list appearances, Epic needs 2+. Items below the minimum get demoted.
-- **Category cap**: "Junk" items can't exceed Uncommon, "Hidden"/"ZedDmg" stay Common.
-- **Derived items**: Contents inherit rarity from their container (e.g., Nails from NailsBox).
-- **Crafted items**: Items not in any loot table but present in recipe files are marked as "Crafted".
+1. An item's real chance in a list is its weight divided by the sum of all weights in that list.
+2. Each list gets its own weight: `min(items, 30) / 30 * min(totalWeight, 10) / 10`. So tiny lists like zombie outfit tables barely count, while real containers (lockers, shelves, gun stores) count fully. No data is thrown away.
+3. The item's final score is the sum of `realChance * listWeight` over every list it appears in.
 
----
+A few adjustments on top: items without enough list appearances get demoted from Legendary and Epic, junk items are capped at Uncommon, contents inherit rarity from their container (Nails from NailsBox), and items that only exist in recipe files are marked Crafted.
 
-## Project Structure
+## Repo layout
 
 ```
-item-rarity-ui/
-├── mod.info                                    # Mod metadata
-├── poster.png                                  # Workshop poster
-├── modicon.png                                 # Mod icon (B42)
-├── README.md                                   # This file
-├── all-items.json                              # Generated item registry (not shipped)
-│
-├── media/
-│   └── lua/
-│       ├── client/
-│       │   └── ItemRarityUI.lua                # Main mod UI code (shared B41+B42)
-│       └── shared/
-│           └── ItemRarityData.lua              # B41 rarity data (auto-generated)
-│
-├── 42/
-│   └── media/
-│       └── lua/
-│           └── shared/
-│               └── ItemRarityData.lua          # B42 rarity data (auto-generated)
-│
-├── scripts/                                    # Build & data generation scripts (Node.js)
-│   ├── mod-config.js                           # Shared config (mod ID, file lists, deploy logic)
-│   ├── scan-items.js                           # Scans game files → all-items.json
-│   ├── calculate-rarity.js                     # Calculates rarities → ItemRarityData.lua
-│   ├── build.js                                # Builds mod + optional local deploy
-│   ├── deploy-to-steam.js                      # Deploys to Steam Workshop folder
-│   ├── verify-items.js                         # Verifies known items in generated data
-│   ├── analyze-item.js                         # Debug: shows item across all loot tables
-│   └── compare-versions.js                     # Compares B41 vs B42 rarity data
-│
-└── builds/                                     # Build output (git-ignored)
-    └── item-rarity-ui/
+media/lua/client/ItemRarityUI.lua     UI code, shared by B41 and B42
+media/lua/shared/ItemRarityData.lua   B41 rarity data (generated)
+42/media/lua/shared/                  B42 rarity data (generated) and translations
+scripts/                              Node.js scripts that generate the data
+builds/                               build output, git ignored
 ```
 
----
+## Regenerating the data
 
-## Scripts Reference
-
-All scripts are in the `scripts/` folder and require **Node.js**. Run from the project root.
-
-### `scan-items.js` — Scan Game Items
-
-Parses all `media/scripts/*.txt` files from the Project Zomboid install and extracts every item definition with its DisplayCategory, Type, and craftability.
+You need Node.js and Project Zomboid installed. The scripts read the game files straight from the Steam install, so the data you generate matches whatever version Steam has on disk. To generate for both builds you have to switch the game version in Steam (Properties > Betas) between runs.
 
 ```bash
-node scripts/scan-items.js
+node scripts/scan-items.js              # scan game items and recipes
+node scripts/calculate-rarity.js --b42  # write rarity data (--b41 for Build 41)
+node scripts/verify-items.js --b42      # sanity check known items
 ```
 
-- **Input**: Game files at `C:\Program Files (x86)\Steam\steamapps\common\ProjectZomboid\media\scripts\`
-- **Output**: `all-items.json` (complete item registry)
-- **B41/B42**: Automatically detects. B41 reads `scripts/recipes.txt`, B42 reads `scripts/generated/recipes/*.txt`
-- **When to run**: Before `calculate-rarity.js`. Run again if the game updates or you switch between B41/B42.
-
----
-
-### `calculate-rarity.js` — Generate Rarity Data
-
-The main script. Reads loot distribution files, calculates weighted chances, applies adjustments, and outputs `ItemRarityData.lua`.
+Other scripts:
 
 ```bash
-# Generate for B41 (output: media/lua/shared/ItemRarityData.lua)
-node scripts/calculate-rarity.js --b41
-
-# Generate for B42 (output: 42/media/lua/shared/ItemRarityData.lua)
-node scripts/calculate-rarity.js --b42
-
-# Auto-detect (defaults to B41 output path)
-node scripts/calculate-rarity.js
+node scripts/analyze-item.js Katana     # show one item across all loot tables
+node scripts/compare-versions.js        # diff B41 vs B42 rarity data
+node scripts/build.js --deploy          # build and copy to your Zomboid mods folder
+node scripts/deploy-to-steam.js         # build the Workshop upload structure
 ```
 
-- **Input**: Game distribution files + `all-items.json`
-- **Output**: `ItemRarityData.lua` (B41 at root, B42 at `42/`)
-- **Prerequisite**: Run `scan-items.js` first
-- **Important**: You must be on the correct game version in Steam. B41 files generate B41 data, B42 files generate B42 data.
-
----
-
-### `build.js` — Build & Local Deploy
-
-Copies all mod files into `builds/item-rarity-ui/`. Optionally deploys to the Zomboid mods folder for local testing.
-
-```bash
-# Build only (to builds/ folder)
-node scripts/build.js
-
-# Build + deploy to C:\Users\ems_f\Zomboid\mods\item-rarity-ui
-node scripts/build.js --deploy
-```
-
-- The `--deploy` flag cleans the existing mod folder and copies files with the B41+B42 dual structure:
-  - Root: `mod.info`, `poster.png`, `modicon.png`, `ItemRarityUI.lua`, B41 `ItemRarityData.lua`
-  - `common/`: empty (required by B42)
-  - `42/`: `mod.info`, `poster.png`, `modicon.png`, `ItemRarityUI.lua`, B42 `ItemRarityData.lua`
-
----
-
-### `deploy-to-steam.js` — Steam Workshop Deploy
-
-Creates the Steam Workshop upload structure at `C:\Users\ems_f\Zomboid\Workshop\`.
-
-```bash
-node scripts/deploy-to-steam.js
-```
-
-- Creates `Workshop/item-rarity-ui/preview.png` (from `poster.png`)
-- Creates `Workshop/item-rarity-ui/Contents/mods/item-rarity-ui/` with full B41+B42 structure
-- After running, use the game's Workshop upload tool or modTemplate to upload
-
-**Workshop output structure:**
-```
-Workshop/item-rarity-ui/
-├── preview.png
-└── Contents/
-    └── mods/
-        └── item-rarity-ui/
-            ├── mod.info, poster.png, modicon.png
-            ├── media/lua/client/ItemRarityUI.lua
-            ├── media/lua/shared/ItemRarityData.lua     ← B41
-            ├── common/                                  ← B42 (empty)
-            └── 42/
-                ├── mod.info, poster.png, modicon.png
-                ├── media/lua/client/ItemRarityUI.lua
-                └── media/lua/shared/ItemRarityData.lua ← B42
-```
-
----
-
-### `mod-config.js` — Shared Configuration
-
-Not meant to be run directly. Exports the mod ID, file lists, and the `deployDualStructure()` function used by `build.js` and `deploy-to-steam.js`.
-
----
-
-### `verify-items.js` — Verify Rarity Data
-
-Quick sanity check. Shows known items (Katana, Sledgehammer, Axe, etc.), percentile distribution, and tier counts.
-
-```bash
-# Verify B41 data (default)
-node scripts/verify-items.js
-
-# Verify B42 data
-node scripts/verify-items.js --b42
-```
-
----
-
-### `analyze-item.js` — Debug Specific Item
-
-Shows every loot table where a specific item appears, with its weight, list total, item count, and real chance.
-
-```bash
-# Analyze Katana across all distribution files
-node scripts/analyze-item.js Katana
-
-# Analyze any item
-node scripts/analyze-item.js Sledgehammer
-node scripts/analyze-item.js NailsBox
-```
-
-- Reads directly from the game files (must have PZ installed)
-- Useful for debugging why an item has a specific rarity
-
----
-
-### `compare-versions.js` — Compare B41 vs B42
-
-Side-by-side comparison of both rarity data files. Shows total items, tier distribution, items unique to each version, and items that changed rarity.
-
-```bash
-node scripts/compare-versions.js
-```
-
-- **Requires**: Both `media/lua/shared/ItemRarityData.lua` (B41) and `42/media/lua/shared/ItemRarityData.lua` (B42) to exist
-
----
-
-## Full Workflow: Regenerating Rarity Data
-
-### For a single version (e.g., B42)
-
-Make sure your game is on the correct version in Steam, then:
-
-```bash
-# 1. Scan all game items and recipes
-node scripts/scan-items.js
-
-# 2. Calculate rarities for B42
-node scripts/calculate-rarity.js --b42
-
-# 3. Verify the results
-node scripts/verify-items.js --b42
-```
-
-### For both versions (B41 + B42)
-
-You need to switch your game version in Steam between runs:
-
-```bash
-# --- While on B42 in Steam ---
-node scripts/scan-items.js
-node scripts/calculate-rarity.js --b42
-
-# --- Switch to B41 in Steam (Properties > Betas) ---
-node scripts/scan-items.js
-node scripts/calculate-rarity.js --b41
-
-# --- Compare ---
-node scripts/compare-versions.js
-```
-
-### Build and deploy for testing
-
-```bash
-# Deploy to local Zomboid mods folder
-node scripts/build.js --deploy
-```
-
-### Deploy to Steam Workshop
-
-```bash
-node scripts/deploy-to-steam.js
-```
-
----
+The data scripts read the game files from the default Steam path, hardcoded at the top of `scripts/helpers/config.js` (and repeated in `scan-items.js` and `analyze-item.js`). The deploy scripts write to `%USERPROFILE%\Zomboid`. Edit those paths if your setup differs.
 
 ## Configuration
 
-You can customize the mod by editing `media/lua/client/ItemRarityUI.lua`:
+Some knobs at the top of `media/lua/client/ItemRarityUI.lua`:
 
-- `ItemRarityUI.colorItemNames` — Enable/disable colored names
-- `ItemRarityUI.showRarityColumn` — Show/hide rarity column
-- `ItemRarityUI.rarityOverrides` — Force specific items to a rarity
-- `ItemRarityUI.rarityTiers` — Adjust rarity thresholds and colors
+- `ItemRarityUI.colorItemNames` turns colored names on or off
+- `ItemRarityUI.showRarityColumn` shows or hides the column
+- `ItemRarityUI.rarityOverrides` forces specific items to a rarity
+- `ItemRarityUI.rarityTiers` adjusts tier colors and display names
 
-## Compatibility
+The actual thresholds live in `scripts/helpers/config.js`. Changing them means regenerating the data.
 
-- **Build 41** and **Build 42** compatible (dual folder structure)
-- Works with existing saves
-- Client-side only - works on servers without server-side installation
-- Dynamic column width for different screen resolutions (Steam Deck)
-- `pcall` wrappers for safe B42 API compatibility
-- **CleanUI V2.3** - auto-disables rarity column, keeps colored names, adds "Rarity" sort option to CleanUI's sort menu
+## Contributing
+
+PRs are welcome. Read [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) first, especially if you code with an LLM. The short of it: understand your diff, and never open a PR without testing the mod in-game.
 
 ## License
 
-MIT License - Feel free to use, modify, and distribute.
+Copyright (c) 2026 endimonan. All rights reserved.
+
+The source is public to read, learn from and contribute to. It is not open source: no reuploads, no redistribution, no bundling into other mods or modpacks, no commercial use. See [LICENSE](LICENSE) for the exact terms. The only official download is the [Steam Workshop page](https://steamcommunity.com/sharedfiles/filedetails/?id=3662387304).

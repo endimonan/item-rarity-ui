@@ -1,9 +1,14 @@
 Please, Like this mod if you enjoyed it, suggestions are welcome.
 
-I develop these projects because I love them, but it also costs money and time
+I develop these projects because I love them, but would be nice to see some support from you to this lovely developer ^^
 
-[h1]=>>> Support my work: https://ko-fi.com/endimonan[/h1]
-[b]Thanks!![/b]
+https://ko-fi.com/endimonan
+[url=https://ko-fi.com/endimonan][img]https://i.imgur.com/3ui7CVa.png[/img][/url]
+
+Tambem para os amigos brasileiros no pix se alguém quiser ajudar: [b]ems_floripa@hotmail.com[/b]
+
+
+Thanks!!
 
 [hr][/hr]
 [h1]What does this mod do?[/h1]
@@ -26,6 +31,7 @@ Items that don't appear in any loot table show as Unknown.
 [h1]Features[/h1]
 [list]
 [*]Colored item names by rarity (RPG-style)
+[*]Show or hide column via menu
 [*]Dedicated "Rarity" column in the inventory panel
 [*]Click the column header to sort items by rarity
 [*]Resizable column - drag to adjust like other columns
@@ -42,10 +48,20 @@ If your language is missing or a translation feels off, let me know.
 [h1]Compatibility[/h1]
 [list]
 [*]Build 41 and Build 42 (42.13.1)
+[*][b]ModOptions is only required for build 41[/b]
 [*]Safe to add to existing saves
-[*]Client-side only - works on servers without needing server-side installation
 [*]CleanUI V2.3 - rarity column is auto-disabled, colored names remain active, and a "Rarity" sort option is added to CleanUI's sort menu
 [/list]
+
+Noted that for dedicated servers on B42 your servertest.ini (or whatever other name it may be) needs to be formated like this:
+
+[b]Mods=\ItemRarityUI;\Mod2;\Mod3;\[/b]
+[b]WorkshopItems=3662387304;Mod2;Mod3[/b]
+
+🚀 Future Plans
+We’ll soon be launching a European server so our friends can enjoy MP together.
+
+Cheers
 
 Workshop ID: 3662387304
 Mod ID: ItemRarityUI

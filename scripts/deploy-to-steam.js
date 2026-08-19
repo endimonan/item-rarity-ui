@@ -1,7 +1,7 @@
 /**
  * Deploy to Steam Workshop folder
  * 
- * Creates the Workshop upload structure at C:\Users\ems_f\Zomboid\Workshop
+ * Creates the Workshop upload structure at %USERPROFILE%\Zomboid\Workshop
  * with B41+B42 dual compatibility:
  * 
  *   Workshop/
@@ -27,11 +27,12 @@
  */
 
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const { MOD_ID, deployDualStructure } = require('./mod-config');
 
 const ROOT = path.join(__dirname, '..');
-const WORKSHOP_BASE = 'C:\\Users\\ems_f\\Zomboid\\Workshop';
+const WORKSHOP_BASE = path.join(os.homedir(), 'Zomboid', 'Workshop');
 const WORKSHOP_MOD_DIR = path.join(WORKSHOP_BASE, MOD_ID);
 const CONTENTS_DIR = path.join(WORKSHOP_MOD_DIR, 'Contents', 'mods', MOD_ID);
 
