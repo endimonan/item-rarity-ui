@@ -17,13 +17,13 @@ Every item gets a rarity tier based on how often it actually shows up across all
 | Common | gray | 0.40 and up |
 | Crafted | cyan | not in any loot table, only craftable |
 
-Items the mod has no data for (mostly items from other mods) show as Unknown.
+Items from other mods are rated when the game starts, using the same formula on the loot tables as they are after every enabled mod added its items. Modded items that are only craftable show as Crafted. Items with no loot entry and no recipe show as Unknown.
 
 Item names get colored right in the inventory. The Rarity column is sortable, resizable, and safe to add to existing saves. Client side only, so it works on any server. Translated into 20 languages. If you run CleanUI, the mod disables its own column, keeps the colored names, and adds a Rarity option to CleanUI's sort menu.
 
 ## How rarity is calculated
 
-The rarity data is generated offline by the scripts in `scripts/`. The mod itself only reads a Lua table, there is no runtime calculation.
+The rarity data for vanilla items is generated offline by the scripts in `scripts/`. Items missing from that data (mostly from other mods) are calculated once at game start by `ItemRarityUI.calculateRuntimeRarities()`, with the same list weighting, thresholds, occurrence demotion and category caps. The offline-only adjustments (foraging, zombie drops, derived box contents, manual overrides) don't apply to them.
 
 For every loot list in `ProceduralDistributions.lua`, `Distributions.lua` and `VehicleDistributions.lua`:
 

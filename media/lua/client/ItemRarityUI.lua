@@ -950,6 +950,201 @@ function ItemRarityUI.loadRarityData()
     end
 end
 
+--***********************************************************
+--** Runtime rarity for items missing from the pre-calculated data
+--** (mostly items added by other mods). Uses the same formula as
+--** scripts/helpers/rarity.js, applied to the loot tables as they are
+--** after every enabled mod has added its items.
+--***********************************************************
+
+-- Keep in sync with scripts/helpers/config.js
+local RUNTIME_THRESHOLDS = {
+    { tier = "legendary", max = 0.01 },
+    { tier = "epic",      max = 0.04 },
+    { tier = "rare",      max = 0.12 },
+    { tier = "uncommon",  max = 0.40 },
+}
+local TIER_MIN_OCCURRENCES = { legendary = 3, epic = 2 }
+local TIER_DEMOTION = { legendary = "rare", epic = "uncommon" }
+local CATEGORY_MAX_RARITY = { Junk = "uncommon", Hidden = "common", Appearance = "uncommon", ZedDmg = "common", Corpse = "common" }
+local TIER_INDEX = { legendary = 1, epic = 2, rare = 3, uncommon = 4, common = 5 }
+
+-- Collect every `items = { "Item", weight, ... }` table under a distribution root.
+-- The same table can be reachable from several roots, so visited avoids counting it twice.
+local function collectItemLists(node, visited, out)
+    if type(node) ~= "table" or visited[node] then return end
+    visited[node] = true
+    for k, v in pairs(node) do
+        if type(v) == "table" then
+            if k == "items" then
+                if not visited[v] then
+                    visited[v] = true
+                    table.insert(out, v)
+                end
+            else
+                collectItemLists(v, visited, out)
+            end
+        end
+    end
+end
+
+local function toFullType(name)
+    if name:find(".", 1, true) then return name end
+    return "Base." .. name
+end
+
+local function getRuntimeTier(chance, occurrences, fullType)
+    local tier = "common"
+    for _, t in ipairs(RUNTIME_THRESHOLDS) do
+        if chance < t.max then
+            tier = t.tier
+            break
+        end
+    end
+
+    local minOcc = TIER_MIN_OCCURRENCES[tier]
+    if minOcc and occurrences < minOcc then
+        tier = TIER_DEMOTION[tier]
+    end
+
+    local script = getScriptManager():FindItem(fullType)
+    local maxTier = script and CATEGORY_MAX_RARITY[tostring(script:getDisplayCategory())]
+    if maxTier and TIER_INDEX[tier] < TIER_INDEX[maxTier] then
+        tier = maxTier
+    end
+    return tier
+end
+
+-- Full types of every item some recipe can produce
+local function collectRecipeOutputs()
+    local outputs = {}
+    if ItemRarityUI.isB42 then
+        local recipes = getScriptManager():getAllCraftRecipes()
+        for i = 0, recipes:size() - 1 do
+            local recipeOutputs = recipes:get(i):getOutputs()
+            for j = 0, recipeOutputs:size() - 1 do
+                local output = recipeOutputs:get(j)
+                if output:getResourceType() == ResourceType.Item then
+                    local items = output:getPossibleResultItems()
+                    for n = 0, items:size() - 1 do
+                        outputs[items:get(n):getFullName()] = true
+                    end
+                end
+            end
+        end
+    else
+        local recipes = getAllRecipes()
+        for i = 0, recipes:size() - 1 do
+            local result = recipes:get(i):getResult()
+            if result then
+                outputs[result:getFullType()] = true
+            end
+        end
+    end
+    return outputs
+end
+
+-- Alternate wear variants (ClothingItemExtra, e.g. a sheath worn on the back or on
+-- the thigh) are separate item types that only exist by swapping from the other
+-- variant, so they share the effective rarity (overrides included) of the variant
+-- that has data.
+local function propagateToWearVariants()
+    local added = 0
+    local items = getScriptManager():getAllItems()
+    repeat
+        local addedThisPass = 0
+        for i = 0, items:size() - 1 do
+            local script = items:get(i)
+            local data = ItemRarityUI.getRarityData(script:getFullName())
+            local extras = data and script:getClothingItemExtra()
+            if extras then
+                for j = 0, extras:size() - 1 do
+                    local extra = tostring(extras:get(j))
+                    if not extra:find(".", 1, true) then
+                        extra = script:getModuleName() .. "." .. extra
+                    end
+                    if not ItemRarityUI.itemRarities[extra] then
+                        ItemRarityUI.itemRarities[extra] = data
+                        addedThisPass = addedThisPass + 1
+                    end
+                end
+            end
+        end
+        added = added + addedThisPass
+    until addedThisPass == 0
+    return added
+end
+
+function ItemRarityUI.calculateRuntimeRarities()
+    if ItemRarityUI.runtimeCalculated then return end
+    if not ItemRarityUI.dataLoaded and not ItemRarityUI.loadRarityData() then return end
+    ItemRarityUI.runtimeCalculated = true
+
+    local lists, visited = {}, {}
+    collectItemLists(ProceduralDistributions and ProceduralDistributions.list, visited, lists)
+    collectItemLists(SuburbsDistributions, visited, lists)
+    collectItemLists(Distributions, visited, lists)
+    collectItemLists(VehicleDistributions, visited, lists)
+
+    local chances, occurrences = {}, {}
+    for _, list in ipairs(lists) do
+        local total, count = 0, 0
+        for i = 1, #list - 1, 2 do
+            local weight = tonumber(list[i + 1])
+            if type(list[i]) == "string" and weight and weight > 0 then
+                total = total + weight
+                count = count + 1
+            end
+        end
+        if total > 0 then
+            local listWeight = (math.min(count, 30) / 30) * (math.min(total, 10) / 10)
+            for i = 1, #list - 1, 2 do
+                local weight = tonumber(list[i + 1])
+                if type(list[i]) == "string" and weight and weight > 0 then
+                    local fullType = toFullType(list[i])
+                    chances[fullType] = (chances[fullType] or 0) + (weight / total) * listWeight
+                    occurrences[fullType] = (occurrences[fullType] or 0) + 1
+                end
+            end
+        end
+    end
+
+    local added, crafted = 0, 0
+    for fullType, chance in pairs(chances) do
+        if not ItemRarityUI.itemRarities[fullType] then
+            local tier = getRuntimeTier(chance, occurrences[fullType], fullType)
+            ItemRarityUI.itemRarities[fullType] = {
+                chance = chance,
+                rarity = tier,
+                occurrences = occurrences[fullType],
+                color = ItemRarityUI.rarityTiers[tier].color
+            }
+            added = added + 1
+        end
+    end
+
+    local ok, outputs = pcall(collectRecipeOutputs)
+    if ok then
+        for fullType in pairs(outputs) do
+            if not ItemRarityUI.itemRarities[fullType] then
+                ItemRarityUI.itemRarities[fullType] = {
+                    chance = 0,
+                    rarity = "crafted",
+                    occurrences = 0,
+                    color = ItemRarityUI.rarityTiers.crafted.color
+                }
+                crafted = crafted + 1
+            end
+        end
+    else
+        print("[ItemRarityUI] WARNING: could not read recipes: " .. tostring(outputs))
+    end
+
+    local variants = propagateToWearVariants()
+
+    print("[ItemRarityUI] Runtime rarity: scanned " .. #lists .. " loot lists, added " .. added .. " looted, " .. crafted .. " crafted and " .. variants .. " wear-variant items not in the pre-calculated data")
+end
+
 -- Get color for an item
 function ItemRarityUI.getColor(fullType)
     -- Use getRarityData to apply overrides
@@ -1499,6 +1694,8 @@ end
 local function onGameStart()
     print("[ItemRarityUI] OnGameStart triggered")
     ItemRarityUI.loadRarityData()
+    -- Loot tables are merged (vanilla + mods) by the time the game starts
+    ItemRarityUI.calculateRuntimeRarities()
 end
 
 local function onLoad()
