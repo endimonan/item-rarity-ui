@@ -1144,7 +1144,10 @@ end
 --** Hook createChildren to add Rarity column header
 --***********************************************************
 
-pcall(require, "ISUI/ISResizableButton")
+-- B41 only: the file doesn't exist at this path in B42 and the require just logs a failure
+if not ItemRarityUI.isB42 then
+    pcall(require, "ISUI/ISResizableButton")
+end
 
 local original_createChildren = ISInventoryPane.createChildren
 
